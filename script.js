@@ -30,11 +30,11 @@ let run = {
     currentTier: 0,
     map: [],
     activeWeapon: 'pistol',
-    equippedWeapons: ['pistol', 'knife'], // Armas equipadas nos slots rápidos
+    equippedWeapons: ['pistol', 'knife'],
     inventory: [
         { id: 'bandage', name: 'Bandagem', icon: '🩹', type: 'item', count: 2 },
         { id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 }
-    ] // Grade de 10 slots (5x2)
+    ]
 };
 
 const TOTAL_TIERS = 20;
@@ -79,7 +79,7 @@ function startRun() {
     run.maxHp = 100 + (metaData.skills.maxHp * 25);
     run.hp = run.maxHp;
     run.ammo = 8 + (metaData.skills.startAmmo * 3);
-    run.scrap = 0;
+    run.scrap = 15; // Começa com um pouco de sucata para testar a loja se quiser
     run.currentTier = 0;
     run.activeWeapon = 'pistol';
     run.equippedWeapons = ['pistol', 'knife'];
@@ -103,7 +103,8 @@ function generateMap() {
             if (t == 0) type = 'combat';
             else if (t == TOTAL_TIERS - 1) type = 'shelter';
             else {
-                const types = ['combat', 'combat', 'loot', 'event', 'rest'];
+                // Adicionado 'shop' nas opções possíveis de nós
+                const types = ['combat', 'combat', 'loot', 'event', 'rest', 'shop'];
                 type = types[Math.floor(Math.random() * types.length)];
             }
             tierNodes.push({
@@ -144,6 +145,7 @@ function renderMap() {
             if (node.type === 'loot') icon = '📦';
             if (node.type === 'event') icon = '❓';
             if (node.type === 'rest') icon = '🔥';
+            if (node.type === 'shop') icon = '🛒'; // Ícone da Loja
             if (node.type === 'shelter') icon = '🚇';
             btn.innerText = icon;
             if (node.available && !node.visited) {
@@ -211,6 +213,8 @@ function selectNode(node) {
         triggerEvent();
     } else if (node.type === 'rest') {
         triggerRest();
+    } else if (node.type === 'shop') {
+        triggerShop(); // Aciona a Loja
     } else if (node.type === 'shelter') {
         winGame();
     }
@@ -221,11 +225,94 @@ function updateHud() {
     document.getElementById('player-scrap').innerText = run.scrap;
 }
 
+function updateEventHud() {
+    let hpEl = document.getElementById('event-hp');
+    let scrapEl = document.getElementById('event-scrap');
+    if (hpEl) hpEl.innerText = run.hp;
+    if (scrapEl) scrapEl.innerText = run.scrap;
+}
+
+// Lógica da Loja
+function triggerShop() {
+    showScreen('screen-event');
+    document.getElementById('event-title').innerText = "MERCADO NEGRO NA ESTRADA";
+    document.getElementById('event-desc').innerText = "Um negociante misterioso instalou uma banca. Troque sua sucata por suprimentos:";
+    updateEventHud();
+    renderShopItems();
+}
+
+function renderShopItems() {
+    let actions = document.getElementById('event-actions');
+    actions.innerHTML = '';
+
+    let shopItems = [
+        { 
+            name: '🩹 Bandagem (+25 HP)', cost: 10, 
+            action: () => {
+                if (run.scrap >= 10) {
+                    run.scrap -= 10;
+                    run.hp = Math.min(run.maxHp, run.hp + 25);
+                    addToInventory({ id: 'bandage', name: 'Bandagem', icon: '🩹', type: 'item', count: 1 });
+                    updateHud();
+                    updateEventHud();
+                    renderShopItems();
+                } else {
+                    alert("Sucata insuficiente!");
+                }
+            } 
+        },
+        { 
+            name: '📦 Caixa de Munição (+4 Munição)', cost: 15, 
+            action: () => {
+                if (run.scrap >= 15) {
+                    run.scrap -= 15;
+                    run.ammo += 4;
+                    addToInventory({ id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 });
+                    updateHud();
+                    updateEventHud();
+                    renderShopItems();
+                } else {
+                    alert("Sucata insuficiente!");
+                }
+            } 
+        },
+        { 
+            name: '💉 Kit Médico (Cura Total)', cost: 30, 
+            action: () => {
+                if (run.scrap >= 30) {
+                    run.scrap -= 30;
+                    run.hp = run.maxHp;
+                    addToInventory({ id: 'medkit', name: 'Kit Médico', icon: '💉', type: 'item', count: 1 });
+                    updateHud();
+                    updateEventHud();
+                    renderShopItems();
+                } else {
+                    alert("Sucata insuficiente!");
+                }
+            } 
+        }
+    ];
+
+    shopItems.forEach(item => {
+        let btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.marginBottom = '6px';
+        btn.innerHTML = `${item.name} <span style="color:var(--accent-yellow);">(${item.cost} Sucata)</span>`;
+        btn.onclick = item.action;
+        actions.appendChild(btn);
+    });
+
+    let leaveBtn = document.createElement('button');
+    leaveBtn.className = 'btn btn-secondary';
+    leaveBtn.innerText = "Continuar Viagem";
+    leaveBtn.onclick = () => showScreen('screen-map');
+    actions.appendChild(leaveBtn);
+}
+
 // Renderização e lógica da Mochila
 function renderBackpack() {
     document.getElementById('bp-hp').innerText = `${run.hp} / ${run.maxHp}`;
     
-    // Renderiza os 3 slots de armas equipadas
     const eqContainer = document.getElementById('bp-equipped-weapons');
     eqContainer.innerHTML = '';
     for (let i = 0; i < 3; i++) {
@@ -248,7 +335,6 @@ function renderBackpack() {
         eqContainer.appendChild(slotDiv);
     }
 
-    // Renderiza a grade de inventário 5x2 (10 slots)
     const gridContainer = document.getElementById('bp-inventory-grid');
     gridContainer.innerHTML = '';
     
@@ -279,7 +365,6 @@ function renderBackpack() {
     }
 }
 
-// Adiciona itens ao inventário respeitando o limite de 10 slots
 function addToInventory(itemObj) {
     let existing = run.inventory.find(i => i.id === itemObj.id);
     if (existing && existing.count) {
@@ -451,6 +536,7 @@ function triggerLoot() {
     run.ammo += 4;
     addToInventory({ id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 });
     updateHud();
+    updateEventHud();
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Viagem</button>`;
 }
@@ -459,6 +545,7 @@ function triggerEvent() {
     showScreen('screen-event');
     document.getElementById('event-title').innerText = "ENCONTRO NA ESTRADA";
     document.getElementById('event-desc').innerText = "Um comboio militar abandonado bloqueia o caminho com suprimentos trancados.";
+    updateEventHud();
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `
         <button class="btn" onclick="run.scrap += 15; run.ammo += 2; addToInventory({id: 'shotgun', name: 'Escopeta', icon: '💣', type: 'weapon'}); showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição/Arma)</button>
@@ -472,6 +559,7 @@ function triggerRest() {
     document.getElementById('event-desc').innerText = "Um momento seguro na estrada para tratar os ferimentos com bandagens.";
     run.hp = Math.min(run.maxHp, run.hp + 25);
     updateHud();
+    updateEventHud();
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Retomar Viagem</button>`;
 }
