@@ -43,6 +43,10 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
     if(screenId === 'screen-menu') updateMenu();
     if(screenId === 'screen-skills') renderSkillTree();
+    if(screenId === 'screen-map') {
+        // Garante que as linhas tracejadas sejam redesenhadas ao retornar para o mapa
+        setTimeout(drawMapConnections, 50);
+    }
 }
 
 function updateMenu() {
@@ -139,6 +143,7 @@ function renderMap() {
 function drawMapConnections() {
     const canvas = document.getElementById('map-canvas');
     const wrapper = document.getElementById('map-wrapper');
+    if (!canvas || !wrapper) return;
     const ctx = canvas.getContext('2d');
 
     canvas.width = wrapper.clientWidth;
@@ -307,11 +312,41 @@ function initQTECanvas() {
     drawRing();
 }
 
+function showCombatToast(text) {
+    let existing = document.getElementById('combat-toast');
+    if (existing) existing.remove();
+
+    let toast = document.createElement('div');
+    toast.id = 'combat-toast';
+    toast.innerText = text;
+    toast.style.position = 'absolute';
+    toast.style.top = '10px';
+    toast.style.background = 'rgba(255, 71, 87, 0.95)';
+    toast.style.color = '#fff';
+    toast.style.padding = '6px 14px';
+    toast.style.borderRadius = '6px';
+    toast.style.fontWeight = 'bold';
+    toast.style.fontSize = '13px';
+    toast.style.zIndex = '100';
+    toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+    toast.style.transition = 'opacity 0.3s';
+    
+    let arena = document.querySelector('.combat-arena');
+    if (arena) {
+        arena.style.position = 'relative';
+        arena.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 1200);
+    }
+}
+
 function triggerShoot() {
     let weapon = weaponsDatabase[run.activeWeapon];
 
     if (run.ammo < weapon.ammoCost) {
-        alert("Munição insuficiente! Troque para a Faca.");
+        showCombatToast("SEM MUNIÇÃO!");
         return;
     }
 
