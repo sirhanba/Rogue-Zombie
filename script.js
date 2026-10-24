@@ -38,7 +38,11 @@ function saveMeta() {
     localStorage.setItem('zombie_meta', JSON.stringify(metaData));
 }
 
+// CORREÇÃO DO BUG: Limpa loops ativos ao trocar de tela para evitar execuções em segundo plano
 function showScreen(screenId) {
+    if (screenId === 'screen-menu' || screenId === 'screen-skills') {
+        stopAllLoops();
+    }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     if(screenId === 'screen-menu') updateMenu();
@@ -48,11 +52,23 @@ function showScreen(screenId) {
     }
 }
 
+function stopAllLoops() {
+    if (combatInterval) {
+        clearInterval(combatInterval);
+        combatInterval = null;
+    }
+    if (qteAnimation) {
+        cancelAnimationFrame(qteAnimation);
+        qteAnimation = null;
+    }
+}
+
 function updateMenu() {
     document.getElementById('meta-points').innerText = metaData.points;
 }
 
 function startRun() {
+    stopAllLoops();
     run.maxHp = 100 + (metaData.skills.maxHp * 25);
     run.hp = run.maxHp;
     run.ammo = 8 + (metaData.skills.startAmmo * 3);
@@ -225,22 +241,26 @@ function startCombat() {
 function initQTECanvas() {
     const canvas = document.getElementById('qteCanvas');
     const ctx = canvas.getContext('2d');
-    if (combatInterval) clearInterval(combatInterval);
-    if (qteAnimation) cancelAnimationFrame(qteAnimation);
+    stopAllLoops();
     combatInterval = setInterval(() => {
         combatData.attackTimer -= 2.5;
         let pct = Math.max(0, (combatData.attackTimer / 100) * 100);
-        document.getElementById('zombie-fill').style.width = pct + '%';
+        let fillEl = document.getElementById('zombie-fill');
+        if (fillEl) fillEl.style.width = pct + '%';
+        
         if (combatData.attackTimer <= 0) {
             run.hp -= (10 + Math.floor(run.currentTier / 2));
-            document.getElementById('combat-hp').innerText = run.hp;
+            let combatHpEl = document.getElementById('combat-hp');
+            if (combatHpEl) combatHpEl.innerText = run.hp;
             combatData.attackTimer = 100; 
             if (run.hp <= 0) {
                 endGame(false);
             }
         }
     }, 100);
+
     function drawRing() {
+        if (!canvas) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         let centerX = canvas.width / 2;
         let centerY = canvas.height / 2;
@@ -328,8 +348,7 @@ function triggerShoot() {
 }
 
 function endCombat(victory) {
-    clearInterval(combatInterval);
-    cancelAnimationFrame(qteAnimation);
+    stopAllLoops();
     if (victory) {
         run.scrap += 12;
         updateHud();
@@ -372,6 +391,7 @@ function triggerRest() {
 }
 
 function winGame() {
+    stopAllLoops();
     let rewardPoints = 150;
     metaData.points += rewardPoints;
     saveMeta();
@@ -383,6 +403,7 @@ function winGame() {
 }
 
 function endGame(victory) {
+    stopAllLoops();
     let rewardPoints = (run.currentTier + 1) * 8;
     metaData.points += rewardPoints;
     saveMeta();
@@ -395,6 +416,7 @@ function endGame(victory) {
 
 function returnToMenu() {
     if(confirm("Deseja mesmo desistir da run atual?")) {
+        stopAllLoops();
         showScreen('screen-menu');
     }
 }
