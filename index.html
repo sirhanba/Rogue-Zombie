@@ -96,13 +96,13 @@
             border: 1px solid #333;
         }
 
-        /* Mapa Vertical */
+        /* Mapa Vertical Longo (20 Andares) */
         #map-container {
             display: flex;
             flex-direction: column-reverse;
-            gap: 15px;
+            gap: 12px;
             width: 100%;
-            max-height: 60vh;
+            max-height: 65vh;
             overflow-y: auto;
             padding: 10px;
             background: var(--card-bg);
@@ -114,19 +114,19 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            min-height: 60px;
+            min-height: 50px;
         }
 
         .map-node {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: #2f3542;
             border: 2px solid #57606f;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             cursor: not-allowed;
             transition: all 0.2s;
         }
@@ -141,24 +141,25 @@
         .map-node.visited {
             background: #2f3542;
             border-color: #333;
-            opacity: 0.5;
+            opacity: 0.4;
         }
 
-        /* Tela de Combate QTE */
+        /* Tela de Combate QTE & Slots de Armas */
         .combat-arena {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
             width: 100%;
             background: var(--card-bg);
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             border: 1px solid #333;
         }
 
         .enemy-info {
             text-align: center;
+            width: 100%;
         }
 
         .zombie-timer-bar {
@@ -183,13 +184,41 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
+        /* Slots de Armas Laterais */
+        .weapon-slots {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .weapon-slot-btn {
+            flex: 1;
+            background: #2f3542;
+            border: 2px solid #57606f;
+            color: var(--text-muted);
+            padding: 8px 5px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .weapon-slot-btn.active {
+            border-color: var(--accent-yellow);
+            background: #ffa50222;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
         .shoot-btn {
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background: linear-gradient(135deg, #ff4757, #ff6b81);
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             border: none;
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
@@ -237,7 +266,7 @@
     <!-- 1. MENU PRINCIPAL -->
     <div id="screen-menu" class="screen active">
         <h2>🧟 APOCALYPSE ESCAPE</h2>
-        <p style="color: var(--text-muted); text-align: center; font-size: 14px;">Sobreviva à subida vertical até o abrigo do governo.</p>
+        <p style="color: var(--text-muted); text-align: center; font-size: 14px;">Sobreviva aos 20 andares até o abrigo seguro do governo.</p>
         
         <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333;">
             <p>Pontos de Sobrevivência (Meta): <span id="meta-points" style="color: var(--accent-green); font-weight: bold;">0</span></p>
@@ -247,12 +276,12 @@
         <button class="btn btn-secondary" onclick="showScreen('screen-skills')">ÁRVORE DE HABILIDADES</button>
     </div>
 
-    <!-- 2. MAPA VERTICAL -->
+    <!-- 2. MAPA VERTICAL LONGO -->
     <div id="screen-map" class="screen">
         <div class="hud">
             <span>❤️ HP: <span id="player-hp">100</span></span>
             <span>🪙 Sucata: <span id="player-scrap">0</span></span>
-            <span>🛡️ Andar: <span id="player-floor">1</span>/5</span>
+            <span>🛡️ Andar: <span id="player-floor">1</span>/20</span>
         </div>
         
         <h3>SELECIONE SEU PRÓXIMO PASSO</h3>
@@ -261,11 +290,11 @@
         <button class="btn btn-danger" onclick="returnToMenu()">Desistir da Run</button>
     </div>
 
-    <!-- 3. TELA DE COMBATE QTE -->
+    <!-- 3. TELA DE COMBATE QTE & SLOTS DE ARMAS -->
     <div id="screen-combat" class="screen">
         <div class="hud">
             <span>❤️ Seu HP: <span id="combat-hp">100</span></span>
-            <span>🔫 Munição: <span id="combat-ammo">6</span></span>
+            <span>🔫 Munição: <span id="combat-ammo">8</span></span>
         </div>
 
         <div class="combat-arena">
@@ -277,10 +306,23 @@
                 </div>
             </div>
 
-            <!-- Canvas do Timing Ring -->
-            <canvas id="qteCanvas" width="220" height="220"></canvas>
+            <!-- Slots de Armas Laterais -->
+            <div class="weapon-slots">
+                <button class="weapon-slot-btn" id="slot-knife" onclick="switchWeapon('knife')">
+                    🔪 Faca<br><small>Infinitas</small>
+                </button>
+                <button class="weapon-slot-btn active" id="slot-pistol" onclick="switchWeapon('pistol')">
+                    🔫 9mm<br><small>1 Munição</small>
+                </button>
+                <button class="weapon-slot-btn" id="slot-shotgun" onclick="switchWeapon('shotgun')">
+                    💣 Escopeta<br><small>2 Munições</small>
+                </button>
+            </div>
 
-            <button class="shoot-btn" onclick="triggerShoot()">ATIRAR</button>
+            <!-- Canvas do Timing Ring com Ponteiro Central -->
+            <canvas id="qteCanvas" width="200" height="200"></canvas>
+
+            <button class="shoot-btn" onclick="triggerShoot()">ATACAR</button>
         </div>
     </div>
 
@@ -312,7 +354,7 @@
         <button class="btn btn-secondary" onclick="showScreen('screen-menu')">Voltar ao Menu</button>
     </div>
 
-    <!-- 6. TELA DE FIM DE JOGO (FIM DE RUN) -->
+    <!-- 6. TELA DE FIM DE JOGO -->
     <div id="screen-gameover" class="screen" style="text-align: center; justify-content: center; height: 80vh;">
         <h2 id="end-title" style="color: var(--accent-red);">VOCÊ MORREU</h2>
         <p id="end-desc" style="color: var(--text-muted); font-size: 14px;">O apocalipse foi implacável desta vez.</p>
@@ -325,41 +367,41 @@
     </div>
 
     <script>
-        // Inicialização do Telegram WebApp
         let tg = window.Telegram.WebApp;
-        if (tg) {
-            tg.expand();
-        }
+        if (tg) { tg.expand(); }
 
-        // Estado Global de Meta-Progressão (Salvo no localStorage)
         let metaData = JSON.parse(localStorage.getItem('zombie_meta')) || {
             points: 0,
             skills: {
-                startAmmo: 0, // +2 balas iniciais por nível
-                maxHp: 0,     // +20 HP máximo por nível
-                widerGreen: 0 // +5% largura da área verde por nível
+                startAmmo: 0, 
+                maxHp: 0,     
+                widerGreen: 0 
             }
         };
 
         const skillConfig = {
-            startAmmo: { name: "Pente Extra", desc: "Começa com +2 munições na pistola.", cost: 10, max: 3 },
-            maxHp: { name: "Resistência Física", desc: "Aumenta o HP máximo em +20.", cost: 15, max: 3 },
-            widerGreen: { name: "Mira Estável", desc: "Alarga a zona verde do QTE em 5%.", cost: 20, max: 2 }
+            startAmmo: { name: "Pente Extra", desc: "Começa com +3 munições iniciais.", cost: 10, max: 3 },
+            maxHp: { name: "Resistência Física", desc: "Aumenta o HP máximo em +25.", cost: 15, max: 3 },
+            widerGreen: { name: "Mira Estável", desc: "Alarga a zona verde do QTE em 8%.", cost: 20, max: 2 }
         };
 
-        // Estado da Run Atual
+        const weaponsDatabase = {
+            knife: { name: "Faca Tática", damage: 1, ammoCost: 0, speed: 0.035, greenWidth: 1.2 },
+            pistol: { name: "Pistola 9mm", damage: 2, ammoCost: 1, speed: 0.045, greenWidth: 0.8 },
+            shotgun: { name: "Escopeta 12", damage: 4, ammoCost: 2, speed: 0.03, greenWidth: 0.5 }
+        };
+
         let run = {
             hp: 100,
             maxHp: 100,
-            ammo: 6,
+            ammo: 8,
             scrap: 0,
             currentTier: 0,
             map: [],
-            currentNodeIndex: null
+            activeWeapon: 'pistol'
         };
 
-        // Configuração do Mapa Vertical (5 andares)
-        const TOTAL_TIERS = 5;
+        const TOTAL_TIERS = 20; // 20 andares exigidos
 
         function saveMeta() {
             localStorage.setItem('zombie_meta', JSON.stringify(metaData));
@@ -376,14 +418,14 @@
             document.getElementById('meta-points').innerText = metaData.points;
         }
 
-        // --- GERADOR DE MAPA VERTICAL ---
+        // --- GERADOR DE MAPA VERTICAL (20 ANDARES) ---
         function startRun() {
-            // Aplicar bônus permanentes da árvore de habilidades
-            run.maxHp = 100 + (metaData.skills.maxHp * 20);
+            run.maxHp = 100 + (metaData.skills.maxHp * 25);
             run.hp = run.maxHp;
-            run.ammo = 6 + (metaData.skills.startAmmo * 2);
+            run.ammo = 8 + (metaData.skills.startAmmo * 3);
             run.scrap = 0;
             run.currentTier = 0;
+            run.activeWeapon = 'pistol';
             
             generateMap();
             showScreen('screen-map');
@@ -393,26 +435,25 @@
 
         function generateMap() {
             run.map = [];
-            // De baixo para cima (Tier 0 até Tier 4, sendo o Tier 4 o Abrigo Seguro)
             for (let t = 0; t < TOTAL_TIERS; t++) {
                 let tierNodes = [];
-                let nodeCount = (t === 0 || t === TOTAL_TIERS - 1) ? 1 : 2; // Início e Fim com 1 nó, meio com 2
+                let nodeCount = (t === 0 || t === TOTAL_TIERS - 1) ? 1 : (Math.random() > 0.5 ? 2 : 1);
                 
                 for (let i = 0; i < nodeCount; i++) {
                     let type = 'combat';
                     if (t === 0) type = 'combat';
                     else if (t === TOTAL_TIERS - 1) type = 'shelter';
                     else {
-                        const types = ['combat', 'loot', 'event', 'rest'];
+                        const types = ['combat', 'combat', 'loot', 'event', 'rest'];
                         type = types[Math.floor(Math.random() * types.length)];
                     }
                     
                     tierNodes.push({
                         id: `${t}-${i}`,
                         tier: t,
-                        type: type, // combat, loot, event, rest, shelter
+                        type: type, 
                         visited: false,
-                        available: t === 0 // O primeiro andar começa disponível
+                        available: t === 0 
                     });
                 }
                 run.map.push(tierNodes);
@@ -431,7 +472,6 @@
                     const btn = document.createElement('div');
                     btn.className = `map-node ${node.available ? 'available' : ''} ${node.visited ? 'visited' : ''}`;
                     
-                    // Ícones baseados no tipo de nó
                     let icon = '💀';
                     if (node.type === 'loot') icon = '📦';
                     if (node.type === 'event') icon = '❓';
@@ -452,17 +492,14 @@
         function selectNode(node) {
             node.visited = true;
             
-            // Liberar nós do próximo tier
             if (node.tier + 1 < TOTAL_TIERS) {
                 run.map[node.tier + 1].forEach(n => n.available = true);
             }
-            // Bloquear nós do tier atual
             run.map[node.tier].forEach(n => n.available = false);
             
             run.currentTier = node.tier;
             renderMap();
 
-            // Tratar tipo de nó
             if (node.type === 'combat') {
                 startCombat();
             } else if (node.type === 'loot') {
@@ -481,32 +518,36 @@
             document.getElementById('player-scrap').innerText = run.scrap;
         }
 
-        // --- MOTOR DE COMBATE QTE (TIMING RING) ---
+        // --- MOTOR DE COMBATE QTE COM PONTEIRO CENTRAL & SLOTS ---
         let combatInterval = null;
         let qteAnimation = null;
         let combatData = {
             enemyHp: 3,
             maxEnemyHp: 3,
-            enemyName: "Zumbi Caminhante",
             attackTimer: 0,
-            attackMaxTime: 50, // contagem regressiva do zumbi
-            angle: 0,
-            speed: 0.04,
-            isAttacking: false
+            angle: 0
         };
+
+        function switchWeapon(wKey) {
+            run.activeWeapon = wKey;
+            document.querySelectorAll('.weapon-slot-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`slot-${wKey}`).classList.add('active');
+        }
 
         function startCombat() {
             showScreen('screen-combat');
-            combatData.enemyHp = 3 + run.currentTier;
+            // Dificuldade escala conforme a altura do andar (até 20)
+            combatData.enemyHp = 3 + Math.floor(run.currentTier / 2);
             combatData.maxEnemyHp = combatData.enemyHp;
             combatData.attackTimer = 100;
             combatData.angle = 0;
             
-            document.getElementById('enemy-name').innerText = `Zumbi Nível ${run.currentTier + 1}`;
+            document.getElementById('enemy-name').innerText = `Zumbi Andar ${run.currentTier + 1}`;
             document.getElementById('combat-hp').innerText = run.hp;
             document.getElementById('combat-ammo').innerText = run.ammo;
             document.getElementById('enemy-hp').innerText = combatData.enemyHp;
 
+            switchWeapon('pistol');
             initQTECanvas();
         }
 
@@ -517,88 +558,94 @@
             if (combatInterval) clearInterval(combatInterval);
             if (qteAnimation) cancelAnimationFrame(qteAnimation);
 
-            // Timer do zumbi atacando em tempo real
             combatInterval = setInterval(() => {
-                combatData.attackTimer -= 2;
+                combatData.attackTimer -= 2.5;
                 let pct = Math.max(0, (combatData.attackTimer / 100) * 100);
                 document.getElementById('zombie-fill').style.width = pct + '%';
 
                 if (combatData.attackTimer <= 0) {
-                    // Zumbi ataca o jogador!
-                    run.hp -= 15;
+                    run.hp -= (10 + Math.floor(run.currentTier / 2));
                     document.getElementById('combat-hp').innerText = run.hp;
-                    combatData.attackTimer = 100; // reseta o ataque
+                    combatData.attackTimer = 100; 
                     if (run.hp <= 0) {
                         endGame(false);
                     }
                 }
             }, 100);
 
-            // Loop de animação do anel QTE
             function drawRing() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
                 let centerX = canvas.width / 2;
                 let centerY = canvas.height / 2;
-                let radius = 80;
+                let radius = 70;
 
                 // Fundo do anel (Vermelho / Falha)
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-                ctx.lineWidth = 18;
+                ctx.lineWidth = 16;
                 ctx.strokeStyle = '#ff4757';
                 ctx.stroke();
 
-                // Zona Verde (Acerto) - bônus da árvore aumenta o tamanho
-                let bonusGreen = metaData.skills.widerGreen * 0.1;
-                let greenStart = 0;
-                let greenEnd = Math.PI * (0.6 + bonusGreen);
+                // Zona Verde baseada na arma ativa + árvore de habilidades
+                let weapon = weaponsDatabase[run.activeWeapon];
+                let bonusGreen = metaData.skills.widerGreen * 0.08;
+                let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
                 
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, greenStart, greenEnd);
-                ctx.lineWidth = 18;
+                ctx.arc(centerX, centerY, radius, 0, greenLimit);
+                ctx.lineWidth = 16;
                 ctx.strokeStyle = '#2ed573';
                 ctx.stroke();
 
-                // Ponteiro giratório branco
+                // Ponteiro branco partindo do meio (estilo relógio/radar)
                 ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
                 let pointerX = centerX + Math.cos(combatData.angle) * radius;
                 let pointerY = centerY + Math.sin(combatData.angle) * radius;
-                ctx.arc(pointerX, pointerY, 6, 0, 2 * Math.PI);
+                ctx.lineTo(pointerX, pointerY);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Pequeno círculo na ponta do ponteiro para destaque
+                ctx.beginPath();
+                ctx.arc(pointerX, pointerY, 4, 0, 2 * Math.PI);
                 ctx.fillStyle = '#ffffff';
                 ctx.fill();
 
-                combatData.angle += combatData.speed;
+                combatData.angle += weapon.speed;
                 qteAnimation = requestAnimationFrame(drawRing);
             }
             drawRing();
         }
 
         function triggerShoot() {
-            if (run.ammo <= 0) {
-                alert("Sem munição! Ataque corpo a corpo ou fuja se possível.");
+            let weapon = weaponsDatabase[run.activeWeapon];
+
+            if (run.ammo < weapon.ammoCost) {
+                alert("Munição insuficiente para esta arma! Troque para a Faca ou colete suprimentos.");
                 return;
             }
 
-            run.ammo--;
-            document.getElementById('combat-ammo').innerText = run.ammo;
+            if (weapon.ammoCost > 0) {
+                run.ammo -= weapon.ammoCost;
+                document.getElementById('combat-ammo').innerText = run.ammo;
+            }
 
-            // Verificar se o ponteiro está na zona verde (entre 0 e ~1.8 radianos)
             let normalizedAngle = combatData.angle % (2 * Math.PI);
-            let bonusGreen = metaData.skills.widerGreen * 0.1;
-            let greenLimit = Math.PI * (0.6 + bonusGreen);
+            let bonusGreen = metaData.skills.widerGreen * 0.08;
+            let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
 
             if (normalizedAngle >= 0 && normalizedAngle <= greenLimit) {
-                // Acerto!
-                combatData.enemyHp--;
+                // Acerto! Aplica dano da arma ativa
+                combatData.enemyHp -= weapon.damage;
                 if (combatData.enemyHp <= 0) {
                     endCombat(true);
                     return;
                 }
-            } else {
-                // Errou o tiro (gasta munição sem causar dano)
             }
-            document.getElementById('enemy-hp').innerText = combatData.enemyHp;
+            document.getElementById('enemy-hp').innerText = Math.max(0, combatData.enemyHp);
         }
 
         function endCombat(victory) {
@@ -606,7 +653,7 @@
             cancelAnimationFrame(qteAnimation);
 
             if (victory) {
-                run.scrap += 15;
+                run.scrap += 12;
                 updateHud();
                 showScreen('screen-map');
             } else {
@@ -618,10 +665,10 @@
         function triggerLoot() {
             showScreen('screen-event');
             document.getElementById('event-title').innerText = "CAIXA DE SUPRIMENTOS";
-            document.getElementById('event-desc').innerText = "Você vasculhou os escombros e encontrou itens úteis.";
+            document.getElementById('event-desc').innerText = "Você vasculhou os escombros e encontrou munição e sucata.";
             
-            run.scrap += 25;
-            run.ammo += 3;
+            run.scrap += 20;
+            run.ammo += 4;
             updateHud();
 
             let actions = document.getElementById('event-actions');
@@ -630,22 +677,22 @@
 
         function triggerEvent() {
             showScreen('screen-event');
-            document.getElementById('event-title').innerText = "ENCONTRO SUSPEITO";
-            document.getElementById('event-desc').innerText = "Um sobrevivente ferido pede ajuda na estrada.";
+            document.getElementById('event-title').innerText = "ENCONTRO NA ESTRADA";
+            document.getElementById('event-desc').innerText = "Um comboio militar abandonado com suprimentos trancados.";
             
             let actions = document.getElementById('event-actions');
             actions.innerHTML = `
-                <button class="btn" onclick="run.scrap += 10; showScreen('screen-map'); updateHud();">Ajudar (+10 Sucata)</button>
-                <button class="btn btn-secondary" onclick="showScreen('screen-map')">Ignorar e Seguir</button>
+                <button class="btn" onclick="run.scrap += 15; run.ammo += 2; showScreen('screen-map'); updateHud();">Forçar a Fechadura (+Sucata/+Munição)</button>
+                <button class="btn btn-secondary" onclick="showScreen('screen-map')">Seguir Caminho</button>
             `;
         }
 
         function triggerRest() {
             showScreen('screen-event');
             document.getElementById('event-title').innerText = "FOGUEIRA SEGURA";
-            document.getElementById('event-desc').innerText = "Um momento de paz para recuperar fôlego e curar ferimentos.";
+            document.getElementById('event-desc').innerText = "Um momento para tratar os ferimentos com bandagens.";
             
-            run.hp = Math.min(run.maxHp, run.hp + 30);
+            run.hp = Math.min(run.maxHp, run.hp + 25);
             updateHud();
 
             let actions = document.getElementById('event-actions');
@@ -653,26 +700,26 @@
         }
 
         function winGame() {
-            let rewardPoints = 50;
+            let rewardPoints = 150;
             metaData.points += rewardPoints;
             saveMeta();
 
             document.getElementById('end-title').innerText = "ABRIGO ALCANÇADO!";
             document.getElementById('end-title').style.color = "var(--accent-green)";
-            document.getElementById('end-desc').innerText = "Você sobreviveu ao apocalipse e chegou ao portão do governo com segurança.";
+            document.getElementById('end-desc').innerText = "Parabéns! Você sobreviveu aos 20 andares do apocalipse zumbi.";
             document.getElementById('earned-points').innerText = rewardPoints;
             
             showScreen('screen-gameover');
         }
 
         function endGame(victory) {
-            let rewardPoints = (run.currentTier + 1) * 10;
+            let rewardPoints = (run.currentTier + 1) * 8;
             metaData.points += rewardPoints;
             saveMeta();
 
             document.getElementById('end-title').innerText = "VOCÊ MORREU";
             document.getElementById('end-title').style.color = "var(--accent-red)";
-            document.getElementById('end-desc').innerText = "Os infectados te alcançaram na subida.";
+            document.getElementById('end-desc').innerText = "Os infectados te cercaram no andar " + (run.currentTier + 1) + ".";
             document.getElementById('earned-points').innerText = rewardPoints;
             
             showScreen('screen-gameover');
@@ -725,7 +772,6 @@
             }
         }
 
-        // Inicializar menu ao carregar
         updateMenu();
     </script>
 </body>
