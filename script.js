@@ -38,7 +38,6 @@ function saveMeta() {
     localStorage.setItem('zombie_meta', JSON.stringify(metaData));
 }
 
-// CORREÇÃO DO BUG: Limpa loops ativos ao trocar de tela para evitar execuções em segundo plano
 function showScreen(screenId) {
     if (screenId === 'screen-menu' || screenId === 'screen-skills') {
         stopAllLoops();
@@ -230,7 +229,7 @@ function startCombat() {
     combatData.maxEnemyHp = combatData.enemyHp;
     combatData.attackTimer = 100;
     combatData.angle = 0;
-    document.getElementById('enemy-name').innerText = `Zumbi Andar ${run.currentTier + 1}`;
+    document.getElementById('enemy-name').innerText = `Infectado (Etapa ${run.currentTier + 1})`;
     document.getElementById('combat-hp').innerText = run.hp;
     document.getElementById('combat-ammo').innerText = run.ammo;
     document.getElementById('enemy-hp').innerText = combatData.enemyHp;
@@ -361,33 +360,33 @@ function endCombat(victory) {
 function triggerLoot() {
     showScreen('screen-event');
     document.getElementById('event-title').innerText = "CAIXA DE SUPRIMENTOS";
-    document.getElementById('event-desc').innerText = "Você vasculhou os escombros e encontrou munição e sucata.";
+    document.getElementById('event-desc').innerText = "Você vasculhou os escombros na estrada e encontrou munição e sucata.";
     run.scrap += 20;
     run.ammo += 4;
     updateHud();
     let actions = document.getElementById('event-actions');
-    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Subida</button>`;
+    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Viagem</button>`;
 }
 
 function triggerEvent() {
     showScreen('screen-event');
     document.getElementById('event-title').innerText = "ENCONTRO NA ESTRADA";
-    document.getElementById('event-desc').innerText = "Um comboio militar abandonado com suprimentos trancados.";
+    document.getElementById('event-desc').innerText = "Um comboio militar abandonado bloqueia o caminho com suprimentos trancados.";
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `
         <button class="btn" onclick="run.scrap += 15; run.ammo += 2; showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição)</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-map')">Seguir Caminho</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-map')">Desviar Caminho</button>
     `;
 }
 
 function triggerRest() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "FOGUEIRA SEGURA";
-    document.getElementById('event-desc').innerText = "Um momento para tratar os ferimentos com bandagens.";
+    document.getElementById('event-title').innerText = "ÁREA SEGURA PARA DESCANSO";
+    document.getElementById('event-desc').innerText = "Um momento seguro na estrada para tratar os ferimentos com bandagens.";
     run.hp = Math.min(run.maxHp, run.hp + 25);
     updateHud();
     let actions = document.getElementById('event-actions');
-    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Retomar Caminhada</button>`;
+    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Retomar Viagem</button>`;
 }
 
 function winGame() {
@@ -397,7 +396,7 @@ function winGame() {
     saveMeta();
     document.getElementById('end-title').innerText = "ABRIGO ALCANÇADO!";
     document.getElementById('end-title').style.color = "var(--accent-green)";
-    document.getElementById('end-desc').innerText = "Parabéns! Você sobreviveu aos 20 andares do apocalipse zumbi.";
+    document.getElementById('end-desc').innerText = "Parabéns! Você completou todas as 20 etapas e chegou seguro ao abrigo.";
     document.getElementById('earned-points').innerText = rewardPoints;
     showScreen('screen-gameover');
 }
@@ -409,13 +408,13 @@ function endGame(victory) {
     saveMeta();
     document.getElementById('end-title').innerText = "VOCÊ MORREU";
     document.getElementById('end-title').style.color = "var(--accent-red)";
-    document.getElementById('end-desc').innerText = "Os infectados te cercaram no andar " + (run.currentTier + 1) + ".";
+    document.getElementById('end-desc').innerText = "Os infectados te cercaram na etapa " + (run.currentTier + 1) + " da viagem.";
     document.getElementById('earned-points').innerText = rewardPoints;
     showScreen('screen-gameover');
 }
 
 function returnToMenu() {
-    if(confirm("Deseja mesmo desistir da run atual?")) {
+    if(confirm("Deseja mesmo desistir da viagem atual?")) {
         stopAllLoops();
         showScreen('screen-menu');
     }
