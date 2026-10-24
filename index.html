@@ -1,121 +1,34 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zombie Survival: Vertical Escape</title>
-    <!-- SDK do Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <!-- 1. MENU PRINCIPAL -->
-    <div id="screen-menu" class="screen active">
-        <h2>🧟 APOCALYPSE ESCAPE</h2>
-        <p style="color: var(--text-muted); text-align: center; font-size: 14px;">Sobreviva aos 20 andares até o abrigo seguro do governo.</p>
-        
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333;">
-            <p>Pontos de Sobrevivência (Meta): <span id="meta-points" style="color: var(--accent-green); font-weight: bold;">0</span></p>
-        </div>
-
-        <button class="btn" onclick="startRun()">INICIAR NOVA RUN</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-skills')">ÁRVORE DE HABILIDADES</button>
+<div id="screen-combat" class="screen">
+    <div class="top-bar">
+        <span>❤️ Seu HP: <strong id="combat-hp">100</strong></span>
+        <span>🔫 Munição: <strong id="combat-ammo">8</strong></span>
     </div>
 
-    <!-- 2. MAPA VERTICAL COM ROTAS TRACEJADAS -->
-    <div id="screen-map" class="screen">
-        <div class="hud">
-            <span>❤️ HP: <span id="player-hp">100</span></span>
-            <span>🪙 Sucata: <span id="player-scrap">0</span></span>
-            <span>🛡️ Andar: <span id="player-floor">1</span>/20</span>
-        </div>
-        
-        <h3>SELECIONE SEU PRÓXIMO PASSO</h3>
-        <div class="map-wrapper" id="map-wrapper">
-            <canvas id="map-canvas"></canvas>
-            <div id="map-container"></div>
-        </div>
-        
-        <button class="btn btn-danger" onclick="returnToMenu()">Desistir da Run</button>
-    </div>
+    <div class="combat-container">
+        <h3 id="enemy-name" style="text-align: center; margin-bottom: 5px;">Zumbi</h3>
+        <div style="font-size: 12px; color: #a4b0be; text-align: center; margin-bottom: 8px;">HP Zumbi: <span id="enemy-hp">3</span></div>
+        <div class="zombie-bar"><div id="zombie-fill"></div></div>
 
-    <!-- 3. TELA DE COMBATE OTIMIZADA PARA POLEGAR -->
-    <div id="screen-combat" class="screen">
-        <div class="hud">
-            <span>❤️ Seu HP: <span id="combat-hp">100</span></span>
-            <span>🔫 Munição: <span id="combat-ammo">8</span></span>
-        </div>
-
-        <div class="combat-arena">
-            <div class="enemy-info">
-                <h3 id="enemy-name">Zumbi Caminhante</h3>
-                <p style="font-size: 13px; color: var(--text-muted);">HP Zumbi: <span id="enemy-hp">3</span></p>
-                <div class="zombie-timer-bar">
-                    <div id="zombie-fill" class="zombie-timer-fill"></div>
+        <!-- Área central com a Rosquinha (esquerda) e os Slots de Armas Empilhados (direita) -->
+        <div class="combat-middle-area" style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+            <div class="combat-arena" style="position: relative; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center;">
+                <canvas id="qteCanvas" width="140" height="140"></canvas>
+            </div>
+            
+            <div class="weapons-vertical-list" style="display: flex; flex-direction: column; gap: 8px; width: 150px;">
+                <div id="slot-knife" class="weapon-slot-btn" onclick="switchWeapon('knife')" style="background: #1e272e; border: 1px solid #485460; padding: 8px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px;">
+                    <strong>🔪 Faca</strong><br><span style="font-size: 10px; color: #a4b0be;">Infinito</span>
+                </div>
+                <div id="slot-pistol" class="weapon-slot-btn active" onclick="switchWeapon('pistol')" style="background: #1e272e; border: 1px solid #ff4757; padding: 8px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px;">
+                    <strong>🔫 9mm</strong><br><span style="font-size: 10px; color: #a4b0be;">1 Munição</span>
+                </div>
+                <div id="slot-shotgun" class="weapon-slot-btn" onclick="switchWeapon('shotgun')" style="background: #1e272e; border: 1px solid #485460; padding: 8px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px;">
+                    <strong>💣 Escopeta</strong><br><span style="font-size: 10px; color: #a4b0be;">2 Munições</span>
                 </div>
             </div>
-
-            <div class="combat-main-layout">
-                <canvas id="qteCanvas" class="combat-canvas" width="160" height="160"></canvas>
-
-                <div class="weapon-slots-vertical">
-                    <button class="weapon-slot-btn" id="slot-knife" onclick="switchWeapon('knife')">
-                        🔪 Faca<br><small>Infinito</small>
-                    </button>
-                    <button class="weapon-slot-btn active" id="slot-pistol" onclick="switchWeapon('pistol')">
-                        🔫 9mm<br><small>1 Munição</small>
-                    </button>
-                    <button class="weapon-slot-btn" id="slot-shotgun" onclick="switchWeapon('shotgun')">
-                        💣 Escopeta<br><small>2 Munições</small>
-                    </button>
-                </div>
-            </div>
-
-            <button class="shoot-btn" onclick="triggerShoot()">🔥 ATACAR</button>
         </div>
+
+        <!-- Botão de Atacar Grande na parte inferior -->
+        <button class="btn" onclick="triggerShoot()" style="width: 100%; padding: 16px; font-size: 16px; background: #ff4757; margin-top: auto;">🔥 ATACAR</button>
     </div>
-
-    <!-- 4. TELA DE EVENTO / LOOT -->
-    <div id="screen-event" class="screen">
-        <div class="hud">
-            <span>❤️ HP: <span id="event-hp">100</span></span>
-            <span>🪙 Sucata: <span id="event-scrap">0</span></span>
-        </div>
-        
-        <div class="combat-arena" style="text-align: center;">
-            <h3 id="event-title">Evento Desconhecido</h3>
-            <p id="event-desc" style="color: var(--text-muted); font-size: 14px; margin: 10px 0;">Você encontrou uma sala abandonada...</p>
-            <div id="event-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
-        </div>
-    </div>
-
-    <!-- 5. ÁRVORE DE HABILIDADES -->
-    <div id="screen-skills" class="screen">
-        <h2>ÁRVORE DE HABILIDADES</h2>
-        <p style="font-size: 13px; color: var(--text-muted); text-align: center;">Evoluções permanentes para todas as suas runs.</p>
-        
-        <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333;">
-            Disponível: <span id="skills-points" style="color: var(--accent-green); font-weight: bold;">0</span> pts
-        </div>
-
-        <div class="skill-tree" id="skill-tree-list"></div>
-
-        <button class="btn btn-secondary" onclick="showScreen('screen-menu')">Voltar ao Menu</button>
-    </div>
-
-    <!-- 6. TELA DE FIM DE JOGO -->
-    <div id="screen-gameover" class="screen" style="text-align: center; justify-content: center; height: 80vh;">
-        <h2 id="end-title" style="color: var(--accent-red);">VOCÊ MORREU</h2>
-        <p id="end-desc" style="color: var(--text-muted); font-size: 14px;">O apocalipse foi implacável desta vez.</p>
-        
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; width: 100%; border: 1px solid #333;">
-            <p>Pontos de Sobrevivência Ganhos: <span id="earned-points" style="color: var(--accent-green); font-weight: bold;">0</span></p>
-        </div>
-
-        <button class="btn" onclick="showScreen('screen-menu')">Voltar ao Menu</button>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+</div>
