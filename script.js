@@ -220,7 +220,8 @@ let combatData = {
 function switchWeapon(wKey) {
     run.activeWeapon = wKey;
     document.querySelectorAll('.weapon-slot-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`slot-${wKey}`).classList.add('active');
+    let selectedSlot = document.getElementById(`slot-${wKey}`);
+    if (selectedSlot) selectedSlot.classList.add('active');
 }
 
 function startCombat() {
