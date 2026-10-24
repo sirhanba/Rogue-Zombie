@@ -29,7 +29,12 @@ let run = {
     scrap: 0,
     currentTier: 0,
     map: [],
-    activeWeapon: 'pistol'
+    activeWeapon: 'pistol',
+    equippedWeapons: ['pistol', 'knife'], // Armas equipadas nos slots rápidos
+    inventory: [
+        { id: 'bandage', name: 'Bandagem', icon: '🩹', type: 'item', count: 2 },
+        { id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 }
+    ] // Grade de 10 slots (5x2)
 };
 
 const TOTAL_TIERS = 20;
@@ -48,6 +53,9 @@ function showScreen(screenId) {
     if(screenId === 'screen-skills') renderSkillTree();
     if(screenId === 'screen-map') {
         setTimeout(drawMapConnections, 50);
+    }
+    if(screenId === 'screen-backpack') {
+        renderBackpack();
     }
 }
 
@@ -74,6 +82,11 @@ function startRun() {
     run.scrap = 0;
     run.currentTier = 0;
     run.activeWeapon = 'pistol';
+    run.equippedWeapons = ['pistol', 'knife'];
+    run.inventory = [
+        { id: 'bandage', name: 'Bandagem', icon: '🩹', type: 'item', count: 2 },
+        { id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 }
+    ];
     generateMap();
     showScreen('screen-map');
     renderMap();
@@ -84,7 +97,6 @@ function generateMap() {
     run.map = [];
     for (let t = 0; t < TOTAL_TIERS; t++) {
         let tierNodes = [];
-        // Mais opções de nós por etapa (entre 2 e 4 nós nas etapas intermediárias para grande variedade de caminhos)
         let nodeCount = (t == 0 || t == TOTAL_TIERS - 1) ? 1 : (Math.floor(Math.random() * 3) + 2);
         for (let i = 0; i < nodeCount; i++) {
             let type = 'combat';
@@ -106,7 +118,6 @@ function generateMap() {
         run.map.push(tierNodes);
     }
 
-    // Conecta cada nó da etapa atual a todos os nós da próxima etapa, convergindo no abrigo final
     for (let t = 0; t < TOTAL_TIERS - 1; t++) {
         let currentTierNodes = run.map[t];
         let nextTierNodes = run.map[t + 1];
@@ -208,6 +219,78 @@ function selectNode(node) {
 function updateHud() {
     document.getElementById('player-hp').innerText = run.hp;
     document.getElementById('player-scrap').innerText = run.scrap;
+}
+
+// Renderização e lógica da Mochila
+function renderBackpack() {
+    document.getElementById('bp-hp').innerText = `${run.hp} / ${run.maxHp}`;
+    
+    // Renderiza os 3 slots de armas equipadas
+    const eqContainer = document.getElementById('bp-equipped-weapons');
+    eqContainer.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        let wKey = run.equippedWeapons[i];
+        let slotDiv = document.createElement('div');
+        slotDiv.style.background = '#121214';
+        slotDiv.style.border = '1px solid #333';
+        slotDiv.style.borderRadius = '8px';
+        slotDiv.style.padding = '8px';
+        slotDiv.style.textAlign = 'center';
+        slotDiv.style.fontSize = '12px';
+        slotDiv.style.flex = '1';
+        
+        if (wKey && weaponsDatabase[wKey]) {
+            let weapon = weaponsDatabase[wKey];
+            slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--accent-green);">${weapon.name}</span>`;
+        } else {
+            slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--text-muted);">Vazio</span>`;
+        }
+        eqContainer.appendChild(slotDiv);
+    }
+
+    // Renderiza a grade de inventário 5x2 (10 slots)
+    const gridContainer = document.getElementById('bp-inventory-grid');
+    gridContainer.innerHTML = '';
+    
+    for (let i = 0; i < 10; i++) {
+        let itemSlot = document.createElement('div');
+        itemSlot.style.background = '#121214';
+        itemSlot.style.border = '1px solid #333';
+        itemSlot.style.borderRadius = '8px';
+        itemSlot.style.minHeight = '65px';
+        itemSlot.style.display = 'flex';
+        itemSlot.style.flexDirection = 'column';
+        itemSlot.style.alignItems = 'center';
+        itemSlot.style.justifyContent = 'center';
+        itemSlot.style.fontSize = '11px';
+        itemSlot.style.padding = '4px';
+        itemSlot.style.textAlign = 'center';
+
+        if (run.inventory[i]) {
+            let item = run.inventory[i];
+            itemSlot.innerHTML = `<span style="font-size: 18px;">${item.icon || '📦'}</span><span style="margin-top: 2px;">${item.name}</span>`;
+            if (item.count && item.count > 1) {
+                itemSlot.innerHTML += `<span style="font-size: 9px; color: var(--accent-yellow);">x${item.count}</span>`;
+            }
+        } else {
+            itemSlot.innerHTML = `<span style="color: #333; font-size: 10px;">Vazio</span>`;
+        }
+        gridContainer.appendChild(itemSlot);
+    }
+}
+
+// Adiciona itens ao inventário respeitando o limite de 10 slots
+function addToInventory(itemObj) {
+    let existing = run.inventory.find(i => i.id === itemObj.id);
+    if (existing && existing.count) {
+        existing.count += (itemObj.count || 1);
+        return true;
+    }
+    if (run.inventory.length < 10) {
+        run.inventory.push({ ...itemObj, count: itemObj.count || 1 });
+        return true;
+    }
+    return false;
 }
 
 let combatInterval = null;
@@ -363,9 +446,10 @@ function endCombat(victory) {
 function triggerLoot() {
     showScreen('screen-event');
     document.getElementById('event-title').innerText = "CAIXA DE SUPRIMENTOS";
-    document.getElementById('event-desc').innerText = "Você vasculhou os escombros na estrada e encontrou munição e sucata.";
+    document.getElementById('event-desc').innerText = "Você vasculhou os escombros na estrada e encontrou munição e suprimentos.";
     run.scrap += 20;
     run.ammo += 4;
+    addToInventory({ id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 });
     updateHud();
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Viagem</button>`;
@@ -377,7 +461,7 @@ function triggerEvent() {
     document.getElementById('event-desc').innerText = "Um comboio militar abandonado bloqueia o caminho com suprimentos trancados.";
     let actions = document.getElementById('event-actions');
     actions.innerHTML = `
-        <button class="btn" onclick="run.scrap += 15; run.ammo += 2; showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição)</button>
+        <button class="btn" onclick="run.scrap += 15; run.ammo += 2; addToInventory({id: 'shotgun', name: 'Escopeta', icon: '💣', type: 'weapon'}); showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição/Arma)</button>
         <button class="btn btn-secondary" onclick="showScreen('screen-map')">Desviar Caminho</button>
     `;
 }
@@ -458,3 +542,6 @@ function buySkill(key) {
     } else {
         alert("Pontos insuficientes ou nível máximo atingido!");
     }
+}
+
+updateMenu();
