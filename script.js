@@ -84,7 +84,8 @@ function generateMap() {
     run.map = [];
     for (let t = 0; t < TOTAL_TIERS; t++) {
         let tierNodes = [];
-        let nodeCount = (t == 0 || t == TOTAL_TIERS - 1) ? 1 : (Math.random() > 0.4 ? 2 : 1);
+        // Mais opções de nós por etapa (entre 2 e 4 nós nas etapas intermediárias para grande variedade de caminhos)
+        let nodeCount = (t == 0 || t == TOTAL_TIERS - 1) ? 1 : (Math.floor(Math.random() * 3) + 2);
         for (let i = 0; i < nodeCount; i++) {
             let type = 'combat';
             if (t == 0) type = 'combat';
@@ -105,6 +106,7 @@ function generateMap() {
         run.map.push(tierNodes);
     }
 
+    // Conecta cada nó da etapa atual a todos os nós da próxima etapa, convergindo no abrigo final
     for (let t = 0; t < TOTAL_TIERS - 1; t++) {
         let currentTierNodes = run.map[t];
         let nextTierNodes = run.map[t + 1];
@@ -456,6 +458,3 @@ function buySkill(key) {
     } else {
         alert("Pontos insuficientes ou nível máximo atingido!");
     }
-}
-
-updateMenu();
