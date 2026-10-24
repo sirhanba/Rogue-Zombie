@@ -43,8 +43,8 @@
             max-width: 480px;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            padding-bottom: 30px;
+            gap: 12px;
+            padding-bottom: 20px;
         }
 
         .screen.active {
@@ -96,18 +96,34 @@
             border: 1px solid #333;
         }
 
-        /* Mapa Vertical Longo (20 Andares) */
-        #map-container {
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 12px;
+        /* Mapa Vertical com Linhas Tracejadas */
+        .map-wrapper {
+            position: relative;
             width: 100%;
             max-height: 65vh;
             overflow-y: auto;
-            padding: 10px;
             background: var(--card-bg);
             border-radius: 12px;
             border: 1px solid #333;
+            padding: 10px;
+        }
+
+        #map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #map-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 20px;
+            width: 100%;
+            padding: 10px;
         }
 
         .map-tier {
@@ -144,15 +160,15 @@
             opacity: 0.4;
         }
 
-        /* Tela de Combate QTE & Slots de Armas */
+        /* Tela de Combate Otimizada para Polegar */
         .combat-arena {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
             width: 100%;
             background: var(--card-bg);
-            padding: 15px;
+            padding: 12px;
             border-radius: 12px;
             border: 1px solid #333;
         }
@@ -164,11 +180,11 @@
 
         .zombie-timer-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: #333;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .zombie-timer-fill {
@@ -178,28 +194,35 @@
             transition: width 0.1s linear;
         }
 
-        canvas {
+        .combat-canvas {
             background: #111;
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            box-shadow: 0 0 12px rgba(0,0,0,0.8);
         }
 
-        /* Slots de Armas Laterais */
-        .weapon-slots {
+        .combat-main-layout {
             display: flex;
+            align-items: center;
             justify-content: space-between;
             width: 100%;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .weapon-slots-vertical {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
+            width: 100px;
         }
 
         .weapon-slot-btn {
-            flex: 1;
             background: #2f3542;
             border: 2px solid #57606f;
             color: var(--text-muted);
-            padding: 8px 5px;
+            padding: 8px 6px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             text-align: center;
             transition: all 0.2s;
@@ -213,12 +236,12 @@
         }
 
         .shoot-btn {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
+            width: 100%;
+            height: 75px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #ff4757, #ff6b81);
             color: white;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
             border: none;
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
@@ -226,10 +249,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            letter-spacing: 2px;
         }
 
         .shoot-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.97);
         }
 
         /* Árvore de Habilidades */
@@ -276,7 +300,7 @@
         <button class="btn btn-secondary" onclick="showScreen('screen-skills')">ÁRVORE DE HABILIDADES</button>
     </div>
 
-    <!-- 2. MAPA VERTICAL LONGO -->
+    <!-- 2. MAPA VERTICAL COM ROTAS TRACEJADAS -->
     <div id="screen-map" class="screen">
         <div class="hud">
             <span>❤️ HP: <span id="player-hp">100</span></span>
@@ -285,12 +309,15 @@
         </div>
         
         <h3>SELECIONE SEU PRÓXIMO PASSO</h3>
-        <div id="map-container"></div>
+        <div class="map-wrapper" id="map-wrapper">
+            <canvas id="map-canvas"></canvas>
+            <div id="map-container"></div>
+        </div>
         
         <button class="btn btn-danger" onclick="returnToMenu()">Desistir da Run</button>
     </div>
 
-    <!-- 3. TELA DE COMBATE QTE & SLOTS DE ARMAS -->
+    <!-- 3. TELA DE COMBATE OTIMIZADA PARA POLEGAR -->
     <div id="screen-combat" class="screen">
         <div class="hud">
             <span>❤️ Seu HP: <span id="combat-hp">100</span></span>
@@ -306,23 +333,23 @@
                 </div>
             </div>
 
-            <!-- Slots de Armas Laterais -->
-            <div class="weapon-slots">
-                <button class="weapon-slot-btn" id="slot-knife" onclick="switchWeapon('knife')">
-                    🔪 Faca<br><small>Infinitas</small>
-                </button>
-                <button class="weapon-slot-btn active" id="slot-pistol" onclick="switchWeapon('pistol')">
-                    🔫 9mm<br><small>1 Munição</small>
-                </button>
-                <button class="weapon-slot-btn" id="slot-shotgun" onclick="switchWeapon('shotgun')">
-                    💣 Escopeta<br><small>2 Munições</small>
-                </button>
+            <div class="combat-main-layout">
+                <canvas id="qteCanvas" class="combat-canvas" width="160" height="160"></canvas>
+
+                <div class="weapon-slots-vertical">
+                    <button class="weapon-slot-btn" id="slot-knife" onclick="switchWeapon('knife')">
+                        🔪 Faca<br><small>Infinito</small>
+                    </button>
+                    <button class="weapon-slot-btn active" id="slot-pistol" onclick="switchWeapon('pistol')">
+                        🔫 9mm<br><small>1 Munição</small>
+                    </button>
+                    <button class="weapon-slot-btn" id="slot-shotgun" onclick="switchWeapon('shotgun')">
+                        💣 Escopeta<br><small>2 Munições</small>
+                    </button>
+                </div>
             </div>
 
-            <!-- Canvas do Timing Ring com Ponteiro Central -->
-            <canvas id="qteCanvas" width="200" height="200"></canvas>
-
-            <button class="shoot-btn" onclick="triggerShoot()">ATACAR</button>
+            <button class="shoot-btn" onclick="triggerShoot()">🔥 ATACAR</button>
         </div>
     </div>
 
@@ -401,7 +428,7 @@
             activeWeapon: 'pistol'
         };
 
-        const TOTAL_TIERS = 20; // 20 andares exigidos
+        const TOTAL_TIERS = 20;
 
         function saveMeta() {
             localStorage.setItem('zombie_meta', JSON.stringify(metaData));
@@ -418,7 +445,7 @@
             document.getElementById('meta-points').innerText = metaData.points;
         }
 
-        // --- GERADOR DE MAPA VERTICAL (20 ANDARES) ---
+        // --- GERADOR DE MAPA VERTICAL COM CONEXÕES RAMIFICADAS ---
         function startRun() {
             run.maxHp = 100 + (metaData.skills.maxHp * 25);
             run.hp = run.maxHp;
@@ -437,7 +464,8 @@
             run.map = [];
             for (let t = 0; t < TOTAL_TIERS; t++) {
                 let tierNodes = [];
-                let nodeCount = (t === 0 || t === TOTAL_TIERS - 1) ? 1 : (Math.random() > 0.5 ? 2 : 1);
+                // Início e Fim com 1 nó, andares intermediários com 1 ou 2 nós ramificados
+                let nodeCount = (t === 0 || t === TOTAL_TIERS - 1) ? 1 : (Math.random() > 0.4 ? 2 : 1);
                 
                 for (let i = 0; i < nodeCount; i++) {
                     let type = 'combat';
@@ -449,14 +477,29 @@
                     }
                     
                     tierNodes.push({
-                        id: `${t}-${i}`,
+                        id: t * 10 + i,
                         tier: t,
                         type: type, 
                         visited: false,
-                        available: t === 0 
+                        available: t === 0,
+                        connections: [] // IDs dos nós conectados no próximo andar
                     });
                 }
                 run.map.push(tierNodes);
+            }
+
+            // Criar conexões lógicas (ramificações) entre os nós adjacentes
+            for (let t = 0; t < TOTAL_TIERS - 1; t++) {
+                let currentTierNodes = run.map[t];
+                let nextTierNodes = run.map[t + 1];
+
+                currentTierNodes.forEach(node => {
+                    // Cada nó do andar atual se conecta a pelo menos um nó do próximo andar
+                    nextTierNodes.forEach(nextNode => {
+                        // Se houver múltiplos nós, cria rotas cruzadas ou diretas
+                        node.connections.push(nextNode.id);
+                    });
+                });
             }
         }
 
@@ -467,10 +510,12 @@
             run.map.forEach((tier, tIndex) => {
                 const tierDiv = document.createElement('div');
                 tierDiv.className = 'map-tier';
+                tierDiv.dataset.tier = tIndex;
 
                 tier.forEach(node => {
                     const btn = document.createElement('div');
                     btn.className = `map-node ${node.available ? 'available' : ''} ${node.visited ? 'visited' : ''}`;
+                    btn.id = `node-${node.id}`;
                     
                     let icon = '💀';
                     if (node.type === 'loot') icon = '📦';
@@ -487,13 +532,62 @@
                 container.appendChild(tierDiv);
             });
             document.getElementById('player-floor').innerText = run.currentTier + 1;
+
+            // Desenhar as linhas tracejadas após renderizar os elementos DOM
+            setTimeout(drawMapConnections, 50);
+        }
+
+        function drawMapConnections() {
+            const canvas = document.getElementById('map-canvas');
+            const wrapper = document.getElementById('map-wrapper');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.scrollHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#57606f';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 6]); // Linha tracejada
+
+            run.map.forEach(tier => {
+                tier.forEach(node => {
+                    const elFrom = document.getElementById(`node-${node.id}`);
+                    if (!elFrom) return;
+
+                    const rectFrom = elFrom.getBoundingClientRect();
+                    const wrapperRect = wrapper.getBoundingClientRect();
+
+                    let x1 = rectFrom.left + rectFrom.width / 2 - wrapperRect.left + wrapper.scrollLeft;
+                    let y1 = rectFrom.top + rectFrom.height / 2 - wrapperRect.top + wrapper.scrollTop;
+
+                    node.connections.forEach(targetId => {
+                        const elTo = document.getElementById(`node-${targetId}`);
+                        if (!elTo) return;
+
+                        const rectTo = elTo.getBoundingClientRect();
+                        let x2 = rectTo.left + rectTo.width / 2 - wrapperRect.left + wrapper.scrollLeft;
+                        let y2 = rectTo.top + rectTo.height / 2 - wrapperRect.top + wrapper.scrollTop;
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    });
+                });
+            });
         }
 
         function selectNode(node) {
             node.visited = true;
             
             if (node.tier + 1 < TOTAL_TIERS) {
-                run.map[node.tier + 1].forEach(n => n.available = true);
+                // Liberar apenas os nós conectados diretamente a este nó escolhido
+                run.map[node.tier + 1].forEach(n => {
+                    if (node.connections.includes(n.id)) {
+                        n.available = true;
+                    }
+                });
             }
             run.map[node.tier].forEach(n => n.available = false);
             
@@ -518,7 +612,7 @@
             document.getElementById('player-scrap').innerText = run.scrap;
         }
 
-        // --- MOTOR DE COMBATE QTE COM PONTEIRO CENTRAL & SLOTS ---
+        // --- MOTOR DE COMBATE QTE ---
         let combatInterval = null;
         let qteAnimation = null;
         let combatData = {
@@ -536,7 +630,6 @@
 
         function startCombat() {
             showScreen('screen-combat');
-            // Dificuldade escala conforme a altura do andar (até 20)
             combatData.enemyHp = 3 + Math.floor(run.currentTier / 2);
             combatData.maxEnemyHp = combatData.enemyHp;
             combatData.attackTimer = 100;
@@ -578,39 +671,35 @@
                 
                 let centerX = canvas.width / 2;
                 let centerY = canvas.height / 2;
-                let radius = 70;
+                let radius = 60;
 
-                // Fundo do anel (Vermelho / Falha)
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-                ctx.lineWidth = 16;
+                ctx.lineWidth = 14;
                 ctx.strokeStyle = '#ff4757';
                 ctx.stroke();
 
-                // Zona Verde baseada na arma ativa + árvore de habilidades
                 let weapon = weaponsDatabase[run.activeWeapon];
                 let bonusGreen = metaData.skills.widerGreen * 0.08;
                 let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
                 
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, greenLimit);
-                ctx.lineWidth = 16;
+                ctx.lineWidth = 14;
                 ctx.strokeStyle = '#2ed573';
                 ctx.stroke();
 
-                // Ponteiro branco partindo do meio (estilo relógio/radar)
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 let pointerX = centerX + Math.cos(combatData.angle) * radius;
                 let pointerY = centerY + Math.sin(combatData.angle) * radius;
                 ctx.lineTo(pointerX, pointerY);
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 3.5;
                 ctx.strokeStyle = '#ffffff';
                 ctx.stroke();
 
-                // Pequeno círculo na ponta do ponteiro para destaque
                 ctx.beginPath();
-                ctx.arc(pointerX, pointerY, 4, 0, 2 * Math.PI);
+                ctx.arc(pointerX, pointerY, 3.5, 0, 2 * Math.PI);
                 ctx.fillStyle = '#ffffff';
                 ctx.fill();
 
@@ -624,7 +713,7 @@
             let weapon = weaponsDatabase[run.activeWeapon];
 
             if (run.ammo < weapon.ammoCost) {
-                alert("Munição insuficiente para esta arma! Troque para a Faca ou colete suprimentos.");
+                alert("Munição insuficiente! Troque para a Faca.");
                 return;
             }
 
@@ -638,7 +727,6 @@
             let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
 
             if (normalizedAngle >= 0 && normalizedAngle <= greenLimit) {
-                // Acerto! Aplica dano da arma ativa
                 combatData.enemyHp -= weapon.damage;
                 if (combatData.enemyHp <= 0) {
                     endCombat(true);
@@ -682,7 +770,7 @@
             
             let actions = document.getElementById('event-actions');
             actions.innerHTML = `
-                <button class="btn" onclick="run.scrap += 15; run.ammo += 2; showScreen('screen-map'); updateHud();">Forçar a Fechadura (+Sucata/+Munição)</button>
+                <button class="btn" onclick="run.scrap += 15; run.ammo += 2; showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição)</button>
                 <button class="btn btn-secondary" onclick="showScreen('screen-map')">Seguir Caminho</button>
             `;
         }
