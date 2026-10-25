@@ -39,7 +39,7 @@ html, body {
 }
 
 /* ----------------------------------------
-   Tela: Menu Principal
+   Telas
    ---------------------------------------- */
 
 .screen {
@@ -47,9 +47,6 @@ html, body {
   inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 20px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
@@ -61,8 +58,12 @@ html, body {
   pointer-events: auto;
 }
 
-/* Fundo com leve gradiente */
+/* ========== MENU ========== */
+
 #screen-menu {
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
   background: 
     radial-gradient(ellipse at 50% 0%, #1a0a0a 0%, transparent 60%),
     var(--bg-dark);
@@ -123,7 +124,6 @@ html, body {
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  box-shadow: 0 6px 24px var(--accent-glow);
 }
 
 .btn-secondary {
@@ -149,10 +149,129 @@ html, body {
   text-align: center;
 }
 
-/* Placeholder das outras telas */
+/* ========== MAPA ========== */
+
+.map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #141414;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+}
+
+.map-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.map-seed {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#map-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.map-container {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 32px;
+  padding: 30px 20px 60px;
+  position: relative;
+  z-index: 2;
+  min-width: max-content;
+  margin: 0 auto;
+}
+
+.level-row {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  justify-content: center;
+}
+
+.level-label {
+  position: absolute;
+  left: -42px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: #555;
+  width: 32px;
+  text-align: right;
+}
+
+.node {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.15s, box-shadow 0.15s;
+  user-select: none;
+  position: relative;
+}
+
+.node:active {
+  transform: scale(0.92);
+}
+
+.node.available {
+  box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(255,255,255,0.3);
+}
+
+.node.current {
+  box-shadow: 0 0 0 3px var(--accent), 0 0 16px var(--accent-glow);
+  transform: scale(1.08);
+}
+
+.node.visited {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.node.start      { background: #1e8449; }
+.node.battle     { background: #2c3e50; border-color: #34495e; }
+.node.elite      { background: #6c3483; border-color: #8e44ad; }
+.node.event      { background: #1a5276; border-color: #2980b9; }
+.node.recovery   { background: #196f3d; border-color: #27ae60; }
+.node.shop       { background: #9a7d0a; border-color: #f1c40f; color: #111; }
+.node.chest      { background: #a04000; border-color: #e67e22; }
+.node.shelter    { background: #0e6655; border-color: #1abc9c; width: 60px; height: 60px; font-size: 1.6rem; }
+
+/* Placeholder */
 .placeholder-screen {
   text-align: center;
   padding: 40px 20px;
+  margin: auto;
 }
 
 .placeholder-screen h2 {
@@ -163,9 +282,4 @@ html, body {
 .placeholder-screen p {
   color: var(--text-muted);
   margin-bottom: 28px;
-  font-size: 0.95rem;
-}
-
-.back-btn {
-  margin-top: 20px;
 }
