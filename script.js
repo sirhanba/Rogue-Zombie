@@ -1,14 +1,18 @@
 let tg = window.Telegram.WebApp;
 if (tg) { tg.expand(); }
 
-let metaData = JSON.parse(localStorage.getItem('zombie_meta')) || {
-    points: 0,
-    skills: {
-        startAmmo: 0, 
-        maxHp: 0, 
-        widerGreen: 0 
-    }
-};
+let metaData;
+try {
+    metaData = JSON.parse(localStorage.getItem('zombie_meta')) || {
+        points: 0,
+        skills: { startAmmo: 0, maxHp: 0, widerGreen: 0 }
+    };
+} catch (e) {
+    metaData = {
+        points: 0,
+        skills: { startAmmo: 0, maxHp: 0, widerGreen: 0 }
+    };
+}
 
 const skillConfig = {
     startAmmo: { name: "Pente Extra", desc: "Começa com +3 munições iniciais.", cost: 10, max: 3 },
@@ -40,13 +44,20 @@ let run = {
 const TOTAL_TIERS = 20;
 
 function saveMeta() {
-    localStorage.setItem('zombie_meta', JSON.stringify(metaData));
+    try {
+        localStorage.setItem('zombie_meta', JSON.stringify(metaData));
+    } catch (e) {
+        console.error("Erro ao salvar dados:", e);
+    }
 }
 
 function showScreen(screenId) {
     stopAllLoops();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
+    let target = document.getElementById(screenId);
+    if (target) {
+        target.classList.add('active');
+    }
     if(screenId === 'screen-menu') updateMenu();
     if(screenId === 'screen-skills') renderSkillTree();
     if(screenId === 'screen-map') {
@@ -69,7 +80,8 @@ function stopAllLoops() {
 }
 
 function updateMenu() {
-    document.getElementById('meta-points').innerText = metaData.points;
+    let pointsEl = document.getElementById('meta-points');
+    if (pointsEl) pointsEl.innerText = metaData.points;
 }
 
 function startRun() {
@@ -129,6 +141,7 @@ function generateMap() {
 
 function renderMap() {
     const container = document.getElementById('map-container');
+    if (!container) return;
     container.innerHTML = '';
     run.map.forEach((tier, tIndex) => {
         const tierDiv = document.createElement('div');
@@ -152,7 +165,8 @@ function renderMap() {
         });
         container.appendChild(tierDiv);
     });
-    document.getElementById('player-floor').innerText = run.currentTier + 1;
+    let floorEl = document.getElementById('player-floor');
+    if (floorEl) floorEl.innerText = run.currentTier + 1;
     setTimeout(drawMapConnections, 50);
 }
 
@@ -218,8 +232,10 @@ function selectNode(node) {
 }
 
 function updateHud() {
-    document.getElementById('player-hp').innerText = run.hp;
-    document.getElementById('player-scrap').innerText = run.scrap;
+    let hpEl = document.getElementById('player-hp');
+    let scrapEl = document.getElementById('player-scrap');
+    if (hpEl) hpEl.innerText = run.hp;
+    if (scrapEl) scrapEl.innerText = run.scrap;
 }
 
 function updateEventHud() {
@@ -231,14 +247,17 @@ function updateEventHud() {
 
 function triggerShop() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "MERCADO NEGRO NA ESTRADA";
-    document.getElementById('event-desc').innerText = "Um negociante misterioso instalou uma banca. Troque sua sucata por suprimentos:";
+    let titleEl = document.getElementById('event-title');
+    let descEl = document.getElementById('event-desc');
+    if (titleEl) titleEl.innerText = "MERCADO NEGRO NA ESTRADA";
+    if (descEl) descEl.innerText = "Um negociante misterioso instalou uma banca. Troque sua sucata por suprimentos:";
     updateEventHud();
     renderShopItems();
 }
 
 function renderShopItems() {
     let actions = document.getElementById('event-actions');
+    if (!actions) return;
     actions.innerHTML = '';
 
     let shopItems = [
@@ -306,57 +325,61 @@ function renderShopItems() {
 }
 
 function renderBackpack() {
-    document.getElementById('bp-hp').innerText = `${run.hp} / ${run.maxHp}`;
+    let bpHp = document.getElementById('bp-hp');
+    if (bpHp) bpHp.innerText = `${run.hp} / ${run.maxHp}`;
     
     const eqContainer = document.getElementById('bp-equipped-weapons');
-    eqContainer.innerHTML = '';
-    for (let i = 0; i < 3; i++) {
-        let wKey = run.equippedWeapons[i];
-        let slotDiv = document.createElement('div');
-        slotDiv.style.background = '#121214';
-        slotDiv.style.border = '1px solid #333';
-        slotDiv.style.borderRadius = '8px';
-        slotDiv.style.padding = '8px';
-        slotDiv.style.textAlign = 'center';
-        slotDiv.style.fontSize = '12px';
-        slotDiv.style.flex = '1';
-        
-        if (wKey && weaponsDatabase[wKey]) {
-            let weapon = weaponsDatabase[wKey];
-            slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--accent-green);">${weapon.name}</span>`;
-        } else {
-            slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--text-muted);">Vazio</span>`;
+    if (eqContainer) {
+        eqContainer.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            let wKey = run.equippedWeapons[i];
+            let slotDiv = document.createElement('div');
+            slotDiv.style.background = '#121214';
+            slotDiv.style.border = '1px solid #333';
+            slotDiv.style.borderRadius = '8px';
+            slotDiv.style.padding = '8px';
+            slotDiv.style.textAlign = 'center';
+            slotDiv.style.fontSize = '12px';
+            slotDiv.style.flex = '1';
+            
+            if (wKey && weaponsDatabase[wKey]) {
+                let weapon = weaponsDatabase[wKey];
+                slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--accent-green);">${weapon.name}</span>`;
+            } else {
+                slotDiv.innerHTML = `<strong>Slot ${i+1}</strong><br><span style="color:var(--text-muted);">Vazio</span>`;
+            }
+            eqContainer.appendChild(slotDiv);
         }
-        eqContainer.appendChild(slotDiv);
     }
 
     const gridContainer = document.getElementById('bp-inventory-grid');
-    gridContainer.innerHTML = '';
-    
-    for (let i = 0; i < 10; i++) {
-        let itemSlot = document.createElement('div');
-        itemSlot.style.background = '#121214';
-        itemSlot.style.border = '1px solid #333';
-        itemSlot.style.borderRadius = '8px';
-        itemSlot.style.minHeight = '65px';
-        itemSlot.style.display = 'flex';
-        itemSlot.style.flexDirection = 'column';
-        itemSlot.style.alignItems = 'center';
-        itemSlot.style.justifyContent = 'center';
-        itemSlot.style.fontSize = '11px';
-        itemSlot.style.padding = '4px';
-        itemSlot.style.textAlign = 'center';
+    if (gridContainer) {
+        gridContainer.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            let itemSlot = document.createElement('div');
+            itemSlot.style.background = '#121214';
+            itemSlot.style.border = '1px solid #333';
+            itemSlot.style.borderRadius = '8px';
+            itemSlot.style.minHeight = '65px';
+            itemSlot.style.display = 'flex';
+            itemSlot.style.flexDirection = 'column';
+            itemSlot.style.alignItems = 'center';
+            itemSlot.style.justifyContent = 'center';
+            itemSlot.style.fontSize = '11px';
+            itemSlot.style.padding = '4px';
+            itemSlot.style.textAlign = 'center';
 
-        if (run.inventory[i]) {
-            let item = run.inventory[i];
-            itemSlot.innerHTML = `<span style="font-size: 18px;">${item.icon || '📦'}</span><span style="margin-top: 2px;">${item.name}</span>`;
-            if (item.count && item.count > 1) {
-                itemSlot.innerHTML += `<span style="font-size: 9px; color: var(--accent-yellow);">x${item.count}</span>`;
+            if (run.inventory[i]) {
+                let item = run.inventory[i];
+                itemSlot.innerHTML = `<span style="font-size: 18px;">${item.icon || '📦'}</span><span style="margin-top: 2px;">${item.name}</span>`;
+                if (item.count && item.count > 1) {
+                    itemSlot.innerHTML += `<span style="font-size: 9px; color: var(--accent-yellow);">x${item.count}</span>`;
+                }
+            } else {
+                itemSlot.innerHTML = `<span style="color: #333; font-size: 10px;">Vazio</span>`;
             }
-        } else {
-            itemSlot.innerHTML = `<span style="color: #333; font-size: 10px;">Vazio</span>`;
+            gridContainer.appendChild(itemSlot);
         }
-        gridContainer.appendChild(itemSlot);
     }
 }
 
@@ -395,10 +418,17 @@ function startCombat() {
     combatData.maxEnemyHp = combatData.enemyHp;
     combatData.attackTimer = 100;
     combatData.angle = 0;
-    document.getElementById('enemy-name').innerText = `Infectado (Etapa ${run.currentTier + 1})`;
-    document.getElementById('combat-hp').innerText = run.hp;
-    document.getElementById('combat-ammo').innerText = run.ammo;
-    document.getElementById('enemy-hp').innerText = combatData.enemyHp;
+    
+    let enemyNameEl = document.getElementById('enemy-name');
+    let combatHpEl = document.getElementById('combat-hp');
+    let combatAmmoEl = document.getElementById('combat-ammo');
+    let enemyHpEl = document.getElementById('enemy-hp');
+
+    if (enemyNameEl) enemyNameEl.innerText = `Infectado (Etapa ${run.currentTier + 1})`;
+    if (combatHpEl) combatHpEl.innerText = run.hp;
+    if (combatAmmoEl) combatAmmoEl.innerText = run.ammo;
+    if (enemyHpEl) enemyHpEl.innerText = combatData.enemyHp;
+
     switchWeapon('pistol');
     initQTECanvas();
 }
@@ -408,7 +438,6 @@ function initQTECanvas() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    // Limpa qualquer loop anterior antes de iniciar um novo combate
     stopAllLoops();
 
     combatInterval = setInterval(() => {
@@ -509,7 +538,8 @@ function triggerShoot() {
     }
     if (weapon.ammoCost > 0) {
         run.ammo -= 1;
-        document.getElementById('combat-ammo').innerText = run.ammo;
+        let ammoEl = document.getElementById('combat-ammo');
+        if (ammoEl) ammoEl.innerText = run.ammo;
     }
     let normalizedAngle = combatData.angle % (2 * Math.PI);
     let bonusGreen = metaData.skills.widerGreen * 0.08;
@@ -522,7 +552,8 @@ function triggerShoot() {
             return;
         }
     }
-    document.getElementById('enemy-hp').innerText = Math.max(0, combatData.enemyHp);
+    let enemyHpEl = document.getElementById('enemy-hp');
+    if (enemyHpEl) enemyHpEl.innerText = Math.max(0, combatData.enemyHp);
 }
 
 function endCombat(victory) {
@@ -538,29 +569,126 @@ function endCombat(victory) {
 
 function triggerLoot() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "CAIXA DE SUPRIMENTOS";
-    document.getElementById('event-desc').innerText = "Você vasculhou os escombros na estrada e encontrou munição e suprimentos.";
+    let titleEl = document.getElementById('event-title');
+    let descEl = document.getElementById('event-desc');
+    if (titleEl) titleEl.innerText = "CAIXA DE SUPRIMENTOS";
+    if (descEl) descEl.innerText = "Você vasculhou os escombros na estrada e encontrou munição e suprimentos.";
     run.scrap += 20;
     run.ammo += 4;
     addToInventory({ id: 'ammo_box', name: 'Caixa de Munição', icon: '📦', type: 'item', count: 1 });
     updateHud();
     updateEventHud();
     let actions = document.getElementById('event-actions');
-    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Viagem</button>`;
+    if (actions) actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Continuar Viagem</button>`;
 }
 
 function triggerEvent() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "ENCONTRO NA ESTRADA";
-    document.getElementById('event-desc').innerText = "Um comboio militar abandonado bloqueia o caminho com suprimentos trancados.";
+    let titleEl = document.getElementById('event-title');
+    let descEl = document.getElementById('event-desc');
+    if (titleEl) titleEl.innerText = "ENCONTRO NA ESTRADA";
+    if (descEl) descEl.innerText = "Um comboio militar abandonado bloqueia o caminho com suprimentos trancados.";
     updateEventHud();
     let actions = document.getElementById('event-actions');
-    actions.innerHTML = `
-        <button class="btn" onclick="run.scrap += 15; run.ammo += 2; addToInventory({id: 'shotgun', name: 'Escopeta', icon: '💣', type: 'weapon'}); showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição/Arma)</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-map')">Desviar Caminho</button>
-    `;
+    if (actions) {
+        actions.innerHTML = `
+            <button class="btn" onclick="run.scrap += 15; run.ammo += 2; addToInventory({id: 'shotgun', name: 'Escopeta', icon: '💣', type: 'weapon'}); showScreen('screen-map'); updateHud();">Forçar Fechadura (+Sucata/+Munição/Arma)</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-map')">Desviar Caminho</button>
+        `;
+    }
 }
 
 function triggerRest() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "ÁREA SEGURA PA
+    let titleEl = document.getElementById('event-title');
+    let descEl = document.getElementById('event-desc');
+    if (titleEl) titleEl.innerText = "ÁREA SEGURA PARA DESCANSO";
+    if (descEl) descEl.innerText = "Um momento seguro na estrada para tratar os ferimentos com bandagens.";
+    run.hp = Math.min(run.maxHp, run.hp + 25);
+    updateHud();
+    updateEventHud();
+    let actions = document.getElementById('event-actions');
+    if (actions) actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Retomar Viagem</button>`;
+}
+
+function winGame() {
+    stopAllLoops();
+    let rewardPoints = 150;
+    metaData.points += rewardPoints;
+    saveMeta();
+    let titleEl = document.getElementById('end-title');
+    let descEl = document.getElementById('end-desc');
+    let pointsEl = document.getElementById('earned-points');
+    if (titleEl) {
+        titleEl.innerText = "ABRIGO ALCANÇADO!";
+        titleEl.style.color = "var(--accent-green)";
+    }
+    if (descEl) descEl.innerText = "Parabéns! Você completou todas as 20 etapas e chegou seguro ao abrigo.";
+    if (pointsEl) pointsEl.innerText = rewardPoints;
+    showScreen('screen-gameover');
+}
+
+function endGame(victory) {
+    stopAllLoops();
+    let rewardPoints = (run.currentTier + 1) * 8;
+    metaData.points += rewardPoints;
+    saveMeta();
+    let titleEl = document.getElementById('end-title');
+    let descEl = document.getElementById('end-desc');
+    let pointsEl = document.getElementById('earned-points');
+    if (titleEl) {
+        titleEl.innerText = "VOCÊ MORREU";
+        titleEl.style.color = "var(--accent-red)";
+    }
+    if (descEl) descEl.innerText = "Os infectados te cercaram na etapa " + (run.currentTier + 1) + " da viagem.";
+    if (pointsEl) pointsEl.innerText = rewardPoints;
+    showScreen('screen-gameover');
+}
+
+function returnToMenu() {
+    if(confirm("Deseja mesmo desistir da viagem atual?")) {
+        stopAllLoops();
+        showScreen('screen-menu');
+    }
+}
+
+function renderSkillTree() {
+    let pointsEl = document.getElementById('skills-points');
+    if (pointsEl) pointsEl.innerText = metaData.points;
+    const container = document.getElementById('skill-tree-list');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let key in skillConfig) {
+        let skill = skillConfig[key];
+        let currentLevel = metaData.skills[key];
+        let card = document.createElement('div');
+        card.className = 'skill-card';
+        card.innerHTML = `
+            <div class="skill-info">
+                <h4>${skill.name} (${currentLevel}/${skill.max})</h4>
+                <p>${skill.desc}</p>
+            </div>
+            <button class="btn" style="width: auto; padding: 8px 12px; font-size: 13px;" 
+                onclick="buySkill('${key}')" ${currentLevel >= skill.max ? 'disabled style="background:#333;color:#777;"' : ''}>
+                ${currentLevel >= skill.max ? 'MAX' : `${skill.cost * (currentLevel + 1)} pts`}
+            </button>
+        `;
+        container.appendChild(card);
+    }
+}
+
+function buySkill(key) {
+    let skill = skillConfig[key];
+    let currentLevel = metaData.skills[key];
+    let cost = skill.cost * (currentLevel + 1);
+    if (currentLevel < skill.max && metaData.points >= cost) {
+        metaData.points -= cost;
+        metaData.skills[key]++;
+        saveMeta();
+        renderSkillTree();
+    } else {
+        alert("Pontos insuficientes ou nível máximo atingido!");
+    }
+}
+
+updateMenu();
