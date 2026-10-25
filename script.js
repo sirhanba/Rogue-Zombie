@@ -44,9 +44,7 @@ function saveMeta() {
 }
 
 function showScreen(screenId) {
-    if (screenId === 'screen-menu' || screenId === 'screen-skills') {
-        stopAllLoops();
-    }
+    stopAllLoops();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     if(screenId === 'screen-menu') updateMenu();
@@ -79,7 +77,7 @@ function startRun() {
     run.maxHp = 100 + (metaData.skills.maxHp * 25);
     run.hp = run.maxHp;
     run.ammo = 8 + (metaData.skills.startAmmo * 3);
-    run.scrap = 15; // Começa com um pouco de sucata para testar a loja se quiser
+    run.scrap = 15;
     run.currentTier = 0;
     run.activeWeapon = 'pistol';
     run.equippedWeapons = ['pistol', 'knife'];
@@ -103,7 +101,6 @@ function generateMap() {
             if (t == 0) type = 'combat';
             else if (t == TOTAL_TIERS - 1) type = 'shelter';
             else {
-                // Adicionado 'shop' nas opções possíveis de nós
                 const types = ['combat', 'combat', 'loot', 'event', 'rest', 'shop'];
                 type = types[Math.floor(Math.random() * types.length)];
             }
@@ -145,7 +142,7 @@ function renderMap() {
             if (node.type === 'loot') icon = '📦';
             if (node.type === 'event') icon = '❓';
             if (node.type === 'rest') icon = '🔥';
-            if (node.type === 'shop') icon = '🛒'; // Ícone da Loja
+            if (node.type === 'shop') icon = '🛒';
             if (node.type === 'shelter') icon = '🚇';
             btn.innerText = icon;
             if (node.available && !node.visited) {
@@ -214,7 +211,7 @@ function selectNode(node) {
     } else if (node.type === 'rest') {
         triggerRest();
     } else if (node.type === 'shop') {
-        triggerShop(); // Aciona a Loja
+        triggerShop();
     } else if (node.type === 'shelter') {
         winGame();
     }
@@ -232,7 +229,6 @@ function updateEventHud() {
     if (scrapEl) scrapEl.innerText = run.scrap;
 }
 
-// Lógica da Loja
 function triggerShop() {
     showScreen('screen-event');
     document.getElementById('event-title').innerText = "MERCADO NEGRO NA ESTRADA";
@@ -309,7 +305,6 @@ function renderShopItems() {
     actions.appendChild(leaveBtn);
 }
 
-// Renderização e lógica da Mochila
 function renderBackpack() {
     document.getElementById('bp-hp').innerText = `${run.hp} / ${run.maxHp}`;
     
@@ -410,8 +405,12 @@ function startCombat() {
 
 function initQTECanvas() {
     const canvas = document.getElementById('qteCanvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    
+    // Limpa qualquer loop anterior antes de iniciar um novo combate
     stopAllLoops();
+
     combatInterval = setInterval(() => {
         combatData.attackTimer -= 2.5;
         let pct = Math.max(0, (combatData.attackTimer / 100) * 100);
@@ -430,24 +429,29 @@ function initQTECanvas() {
     }, 100);
 
     function drawRing() {
-        if (!canvas) return;
+        if (!canvas || !document.getElementById('screen-combat').classList.contains('active')) return;
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         let centerX = canvas.width / 2;
         let centerY = canvas.height / 2;
         let radius = 60;
+        
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.lineWidth = 14;
         ctx.strokeStyle = '#ff4757';
         ctx.stroke();
+        
         let weapon = weaponsDatabase[run.activeWeapon];
         let bonusGreen = metaData.skills.widerGreen * 0.08;
         let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
+        
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, greenLimit);
         ctx.lineWidth = 14;
         ctx.strokeStyle = '#2ed573';
         ctx.stroke();
+        
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         let pointerX = centerX + Math.cos(combatData.angle) * radius;
@@ -456,13 +460,16 @@ function initQTECanvas() {
         ctx.lineWidth = 3.5;
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
+        
         ctx.beginPath();
         ctx.arc(pointerX, pointerY, 3.5, 0, 2 * Math.PI);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
+        
         combatData.angle += weapon.speed;
         qteAnimation = requestAnimationFrame(drawRing);
     }
+    
     drawRing();
 }
 
@@ -507,6 +514,7 @@ function triggerShoot() {
     let normalizedAngle = combatData.angle % (2 * Math.PI);
     let bonusGreen = metaData.skills.widerGreen * 0.08;
     let greenLimit = Math.PI * (weapon.greenWidth + bonusGreen);
+    
     if (normalizedAngle >= 0 && normalizedAngle <= greenLimit) {
         combatData.enemyHp -= weapon.damage;
         if (combatData.enemyHp <= 0) {
@@ -555,81 +563,4 @@ function triggerEvent() {
 
 function triggerRest() {
     showScreen('screen-event');
-    document.getElementById('event-title').innerText = "ÁREA SEGURA PARA DESCANSO";
-    document.getElementById('event-desc').innerText = "Um momento seguro na estrada para tratar os ferimentos com bandagens.";
-    run.hp = Math.min(run.maxHp, run.hp + 25);
-    updateHud();
-    updateEventHud();
-    let actions = document.getElementById('event-actions');
-    actions.innerHTML = `<button class="btn" onclick="showScreen('screen-map')">Retomar Viagem</button>`;
-}
-
-function winGame() {
-    stopAllLoops();
-    let rewardPoints = 150;
-    metaData.points += rewardPoints;
-    saveMeta();
-    document.getElementById('end-title').innerText = "ABRIGO ALCANÇADO!";
-    document.getElementById('end-title').style.color = "var(--accent-green)";
-    document.getElementById('end-desc').innerText = "Parabéns! Você completou todas as 20 etapas e chegou seguro ao abrigo.";
-    document.getElementById('earned-points').innerText = rewardPoints;
-    showScreen('screen-gameover');
-}
-
-function endGame(victory) {
-    stopAllLoops();
-    let rewardPoints = (run.currentTier + 1) * 8;
-    metaData.points += rewardPoints;
-    saveMeta();
-    document.getElementById('end-title').innerText = "VOCÊ MORREU";
-    document.getElementById('end-title').style.color = "var(--accent-red)";
-    document.getElementById('end-desc').innerText = "Os infectados te cercaram na etapa " + (run.currentTier + 1) + " da viagem.";
-    document.getElementById('earned-points').innerText = rewardPoints;
-    showScreen('screen-gameover');
-}
-
-function returnToMenu() {
-    if(confirm("Deseja mesmo desistir da viagem atual?")) {
-        stopAllLoops();
-        showScreen('screen-menu');
-    }
-}
-
-function renderSkillTree() {
-    document.getElementById('skills-points').innerText = metaData.points;
-    const container = document.getElementById('skill-tree-list');
-    container.innerHTML = '';
-    for (let key in skillConfig) {
-        let skill = skillConfig[key];
-        let currentLevel = metaData.skills[key];
-        let card = document.createElement('div');
-        card.className = 'skill-card';
-        card.innerHTML = `
-            <div class="skill-info">
-                <h4>${skill.name} (${currentLevel}/${skill.max})</h4>
-                <p>${skill.desc}</p>
-            </div>
-            <button class="btn" style="width: auto; padding: 8px 12px; font-size: 13px;" 
-                onclick="buySkill('${key}')" ${currentLevel >= skill.max ? 'disabled style="background:#333;color:#777;"' : ''}>
-                ${currentLevel >= skill.max ? 'MAX' : `${skill.cost * (currentLevel + 1)} pts`}
-            </button>
-        `;
-        container.appendChild(card);
-    }
-}
-
-function buySkill(key) {
-    let skill = skillConfig[key];
-    let currentLevel = metaData.skills[key];
-    let cost = skill.cost * (currentLevel + 1);
-    if (currentLevel < skill.max && metaData.points >= cost) {
-        metaData.points -= cost;
-        metaData.skills[key]++;
-        saveMeta();
-        renderSkillTree();
-    } else {
-        alert("Pontos insuficientes ou nível máximo atingido!");
-    }
-}
-
-updateMenu();
+    document.getElementById('event-title').innerText = "ÁREA SEGURA PA
