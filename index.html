@@ -23,40 +23,71 @@
           <span class="btn-icon">🧟</span>
           Nova Run
         </button>
-
         <button class="btn btn-secondary" id="btn-skill-tree">
           <span class="btn-icon">🌳</span>
           Árvore de Habilidades
         </button>
       </div>
-
-      <div class="menu-footer">
-        v0.1.0 — Fase 1: Mecânicas
-      </div>
+      <div class="menu-footer">v0.1.0 — Fase 1: Mecânicas</div>
     </div>
 
     <!-- ==================== TELA DO MAPA ==================== -->
     <div id="screen-run" class="screen">
       <div class="map-header">
-        <button class="btn-icon-only" id="btn-back-menu" title="Voltar">←</button>
+        <button class="btn-icon-only" id="btn-back-menu">←</button>
         <div class="map-title">Mapa da Run</div>
         <div class="map-seed" id="map-seed"></div>
       </div>
-
       <div class="map-wrapper" id="map-wrapper">
         <svg id="map-connections"></svg>
         <div class="map-container" id="map-container"></div>
       </div>
     </div>
 
-    <!-- ==================== TELA: ÁRVORE DE HABILIDADES ==================== -->
+    <!-- ==================== TELA DE COMBATE ==================== -->
+    <div id="screen-combat" class="screen">
+      <div class="combat-header">
+        <div class="combat-hp">
+          <span>❤️</span>
+          <span id="player-hp">100</span>
+        </div>
+        <div class="combat-ammo">
+          <span>🔫</span>
+          <span id="player-ammo">30</span>
+        </div>
+      </div>
+
+      <div class="combat-zombie">
+        <div class="zombie-name" id="zombie-name">Zumbi</div>
+        <div class="zombie-hp-bar">
+          <div class="zombie-hp-fill" id="zombie-hp-fill"></div>
+        </div>
+        <div class="zombie-hp-text" id="zombie-hp-text">HP: 50</div>
+      </div>
+
+      <div class="combat-gauge-area">
+        <div class="gauge-container">
+          <canvas id="gauge-canvas" width="220" height="220"></canvas>
+        </div>
+
+        <div class="weapon-list" id="weapon-list">
+          <!-- armas serão inseridas via JS -->
+        </div>
+      </div>
+
+      <button class="btn-attack" id="btn-attack">
+        🔥 ATACAR
+      </button>
+
+      <div class="combat-log" id="combat-log"></div>
+    </div>
+
+    <!-- ==================== ÁRVORE DE HABILIDADES ==================== -->
     <div id="screen-skills" class="screen">
       <div class="placeholder-screen">
         <h2>🌳 Árvore de Habilidades</h2>
         <p>Em breve.</p>
-        <button class="btn btn-secondary back-btn" data-back="menu">
-          ← Voltar ao Menu
-        </button>
+        <button class="btn btn-secondary back-btn" data-back="menu">← Voltar ao Menu</button>
       </div>
     </div>
 
