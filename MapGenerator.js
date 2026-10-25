@@ -1,7 +1,7 @@
 /**
  * MapGenerator.js
  * Geração procedural de mapa vertical - 15 níveis
- * \~60% dos nós são batalha
+ * \~60% batalha + mais conexões laterais
  */
 
 class MapGenerator {
@@ -30,8 +30,7 @@ class MapGenerator {
 
     const roll = this.rng();
 
-    // Distribuição aproximada:
-    // 60% battle | 12% event | 10% chest | 8% elite | 5% recovery | 5% shop
+    // \~60% battle
     if (roll < 0.60) return "battle";
     if (roll < 0.72) return "event";
     if (roll < 0.82) return "chest";
@@ -59,8 +58,6 @@ class MapGenerator {
       const nodes = [];
       for (let i = 0; i < nodeCount; i++) {
         let type = this.getNodeType(level);
-
-        // Evita elite nos primeiros níveis
         if (level <= 4 && type === "elite") type = "battle";
 
         nodes.push({
@@ -76,33 +73,39 @@ class MapGenerator {
       levels.push({ level, nodes });
     }
 
-    // Conexões entre níveis
+    // ===== CONEXÕES (mais abertas) =====
     for (let l = 0; l < levels.length - 1; l++) {
       const currentNodes = levels[l].nodes;
       const nextNodes = levels[l + 1].nodes;
 
       currentNodes.forEach((node, idx) => {
-        const connectionsCount = this.randomInt(1, Math.min(2, nextNodes.length));
-        const possibleTargets = [...nextNodes].sort((a, b) => {
-          return Math.abs(a.index - idx) - Math.abs(b.index - idx);
+        // Agora tenta conectar a 2 ou 3 nós (mais ramificado)
+        const maxConn = Math.min(3, nextNodes.length);
+        const connectionsCount = this.randomInt(2, maxConn);
+
+        // Embaralha os alvos e pega os mais próximos com um pouco de aleatoriedade
+        const targets = [...nextNodes].sort((a, b) => {
+          const distA = Math.abs(a.index - idx);
+          const distB = Math.abs(b.index - idx);
+          // Pequena bagunça para não ficar sempre no mesmo
+          return distA - distB + (this.rng() - 0.5) * 0.8;
         });
 
         const chosen = [];
         for (let c = 0; c < connectionsCount; c++) {
-          if (possibleTargets.length === 0) break;
-          const pickIndex = this.rng() < 0.7 ? 0 : this.randomInt(0, Math.min(2, possibleTargets.length - 1));
-          const target = possibleTargets.splice(pickIndex, 1)[0];
-          chosen.push(target.id);
+          if (targets.length === 0) break;
+          chosen.push(targets.shift().id);
         }
         node.connections = chosen;
       });
 
-      // Evita nós isolados
+      // Garante que nenhum nó fique isolado
       const connectedIds = new Set();
       currentNodes.forEach(n => n.connections.forEach(id => connectedIds.add(id)));
 
       nextNodes.forEach(nextNode => {
         if (!connectedIds.has(nextNode.id)) {
+          // Liga no nó mais próximo do nível anterior
           const closest = currentNodes.reduce((best, n) => {
             return Math.abs(n.index - nextNode.index) < Math.abs(best.index - nextNode.index) ? n : best;
           }, currentNodes[0]);
@@ -111,7 +114,7 @@ class MapGenerator {
       });
     }
 
-    // Garante pelo menos algumas recuperações
+    // Garante algumas recuperações
     for (let i = 4; i < levels.length - 1; i += 5) {
       const lvl = levels[i];
       if (!lvl.nodes.some(n => n.type === "recovery")) {
