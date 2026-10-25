@@ -2,386 +2,66 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rogue Zombie - Map Generator Test</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: #1a1a1a;
-      color: #e0e0e0;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 8px;
-      color: #ff6b6b;
-      font-size: 1.6rem;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #888;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
-    }
-
-    .controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    button {
-      background: #2d2d2d;
-      color: #fff;
-      border: 1px solid #444;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: background 0.2s;
-    }
-
-    button:hover {
-      background: #3d3d3d;
-    }
-
-    button.primary {
-      background: #c0392b;
-      border-color: #e74c3c;
-    }
-
-    button.primary:hover {
-      background: #e74c3c;
-    }
-
-    .info {
-      text-align: center;
-      margin-bottom: 16px;
-      font-size: 0.85rem;
-      color: #aaa;
-    }
-
-    .map-container {
-      display: flex;
-      flex-direction: column-reverse; /* nível 1 embaixo */
-      align-items: center;
-      gap: 28px;
-      padding: 20px 10px 40px;
-      overflow-x: auto;
-      max-width: 100%;
-    }
-
-    .level {
-      display: flex;
-      gap: 18px;
-      position: relative;
-      justify-content: center;
-      min-width: max-content;
-    }
-
-    .level-label {
-      position: absolute;
-      left: -48px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.75rem;
-      color: #666;
-      width: 36px;
-      text-align: right;
-    }
-
-    .node {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      cursor: pointer;
-      position: relative;
-      border: 2px solid transparent;
-      transition: transform 0.15s, box-shadow 0.15s;
-      user-select: none;
-    }
-
-    .node:hover {
-      transform: scale(1.12);
-      z-index: 10;
-    }
-
-    .node.start {
-      background: #2ecc71;
-      box-shadow: 0 0 12px #2ecc7188;
-    }
-
-    .node.battle {
-      background: #2c3e50;
-      border-color: #34495e;
-    }
-
-    .node.elite {
-      background: #8e44ad;
-      border-color: #9b59b6;
-      box-shadow: 0 0 10px #8e44ad66;
-    }
-
-    .node.event {
-      background: #2980b9;
-      border-color: #3498db;
-    }
-
-    .node.recovery {
-      background: #27ae60;
-      border-color: #2ecc71;
-    }
-
-    .node.shop {
-      background: #f39c12;
-      border-color: #f1c40f;
-      color: #222;
-    }
-
-    .node.chest {
-      background: #d35400;
-      border-color: #e67e22;
-    }
-
-    .node.shelter {
-      background: #1abc9c;
-      border-color: #16a085;
-      box-shadow: 0 0 16px #1abc9c88;
-      width: 64px;
-      height: 64px;
-      font-size: 1.7rem;
-    }
-
-    /* Tooltip */
-    .node::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 110%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #111;
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s;
-      z-index: 20;
-    }
-
-    .node:hover::after {
-      opacity: 1;
-    }
-
-    /* Legenda */
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      justify-content: center;
-      margin-top: 30px;
-      padding: 16px;
-      background: #222;
-      border-radius: 12px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-    }
-
-    .legend-color {
-      width: 18px;
-      height: 18px;
-      border-radius: 5px;
-    }
-
-    /* SVG das conexões */
-    #connections {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .map-wrapper {
-      position: relative;
-      width: 100%;
-      overflow-x: auto;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <title>Rogue Zombie</title>
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Telegram Web App Script (oficial) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <h1>Rogue Zombie — Gerador de Mapa</h1>
-  <p class="subtitle">15 níveis • Geração Procedural • Visualização de teste</p>
+  <div id="app">
 
-  <div class="controls">
-    <button class="primary" onclick="generateNewMap()">Gerar Novo Mapa</button>
-    <button onclick="generateWithSeed()">Gerar com Seed</button>
-  </div>
+    <!-- ==================== MENU PRINCIPAL ==================== -->
+    <div id="screen-menu" class="screen active">
+      <div class="menu-logo">
+        ROGUE<br><span>ZOMBIE</span>
+      </div>
+      <p class="menu-subtitle">Sobreviva. Suba. Escape.</p>
 
-  <div class="info" id="info">Seed: —</div>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-new-run">
+          <span class="btn-icon">🧟</span>
+          Nova Run
+        </button>
 
-  <div class="map-wrapper">
-    <svg id="connections"></svg>
-    <div class="map-container" id="map"></div>
-  </div>
+        <button class="btn btn-secondary" id="btn-skill-tree">
+          <span class="btn-icon">🌳</span>
+          Árvore de Habilidades
+        </button>
+      </div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-color" style="background:#2ecc71"></div> Início</div>
-    <div class="legend-item"><div class="legend-color" style="background:#2c3e50"></div> Batalha</div>
-    <div class="legend-item"><div class="legend-color" style="background:#8e44ad"></div> Elite</div>
-    <div class="legend-item"><div class="legend-color" style="background:#2980b9"></div> Evento</div>
-    <div class="legend-item"><div class="legend-color" style="background:#27ae60"></div> Recuperação</div>
-    <div class="legend-item"><div class="legend-color" style="background:#f39c12"></div> Loja</div>
-    <div class="legend-item"><div class="legend-color" style="background:#d35400"></div> Baú</div>
-    <div class="legend-item"><div class="legend-color" style="background:#1abc9c"></div> Abrigo Seguro</div>
+      <div class="menu-footer">
+        v0.1.0 — Fase 1: Mecânicas
+      </div>
+    </div>
+
+    <!-- ==================== TELA: NOVA RUN (placeholder) ==================== -->
+    <div id="screen-run" class="screen">
+      <div class="placeholder-screen">
+        <h2>🗺️ Mapa da Run</h2>
+        <p>Aqui entrará o mapa procedural de 15 níveis.</p>
+        <button class="btn btn-secondary back-btn" data-back="menu">
+          ← Voltar ao Menu
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== TELA: ÁRVORE DE HABILIDADES (placeholder) ==================== -->
+    <div id="screen-skills" class="screen">
+      <div class="placeholder-screen">
+        <h2>🌳 Árvore de Habilidades</h2>
+        <p>Aqui entrará a árvore de perks permanentes.</p>
+        <button class="btn btn-secondary back-btn" data-back="menu">
+          ← Voltar ao Menu
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <script src="MapGenerator.js"></script>
-  <script>
-    const ICONS = {
-      start: "🚶",
-      battle: "💀",
-      elite: "🔥",
-      event: "❓",
-      recovery: "❤️",
-      shop: "🛒",
-      chest: "📦",
-      shelter: "🏠"
-    };
-
-    const TYPE_NAMES = {
-      start: "Início",
-      battle: "Batalha",
-      elite: "Elite",
-      event: "Evento",
-      recovery: "Recuperação",
-      shop: "Loja",
-      chest: "Baú",
-      shelter: "Abrigo Seguro"
-    };
-
-    let currentMap = null;
-
-    function generateNewMap() {
-      const generator = new MapGenerator({ totalLevels: 15 });
-      currentMap = generator.generate();
-      renderMap(currentMap);
-    }
-
-    function generateWithSeed() {
-      const seed = prompt("Digite um seed (número):", Date.now());
-      if (seed === null) return;
-      const generator = new MapGenerator({ totalLevels: 15, seed: Number(seed) });
-      currentMap = generator.generate();
-      renderMap(currentMap);
-    }
-
-    function renderMap(map) {
-      const container = document.getElementById("map");
-      const svg = document.getElementById("connections");
-      container.innerHTML = "";
-      svg.innerHTML = "";
-
-      document.getElementById("info").textContent = `Seed: ${map.seed}  |  Níveis: ${map.totalLevels}`;
-
-      // Renderiza níveis (de baixo para cima por causa do column-reverse)
-      map.levels.forEach((levelData) => {
-        const levelDiv = document.createElement("div");
-        levelDiv.className = "level";
-        levelDiv.dataset.level = levelData.level;
-
-        const label = document.createElement("div");
-        label.className = "level-label";
-        label.textContent = `Nv ${levelData.level}`;
-        levelDiv.appendChild(label);
-
-        levelData.nodes.forEach((node) => {
-          const el = document.createElement("div");
-          el.className = `node ${node.type}`;
-          el.id = node.id;
-          el.textContent = ICONS[node.type] || "?";
-          el.dataset.tooltip = `${TYPE_NAMES[node.type]} (${node.id})`;
-          levelDiv.appendChild(el);
-        });
-
-        container.appendChild(levelDiv);
-      });
-
-      // Desenha conexões depois que o layout foi calculado
-      requestAnimationFrame(() => {
-        drawConnections(map);
-      });
-    }
-
-    function drawConnections(map) {
-      const svg = document.getElementById("connections");
-      const container = document.getElementById("map");
-      const containerRect = container.getBoundingClientRect();
-
-      svg.setAttribute("width", container.scrollWidth);
-      svg.setAttribute("height", container.scrollHeight);
-      svg.style.width = container.scrollWidth + "px";
-      svg.style.height = container.scrollHeight + "px";
-
-      let paths = "";
-
-      map.levels.forEach((levelData) => {
-        levelData.nodes.forEach((node) => {
-          const fromEl = document.getElementById(node.id);
-          if (!fromEl) return;
-
-          const fromRect = fromEl.getBoundingClientRect();
-          const fromX = fromRect.left + fromRect.width / 2 - containerRect.left + container.scrollLeft;
-          const fromY = fromRect.top + fromRect.height / 2 - containerRect.top + container.scrollTop;
-
-          node.connections.forEach((targetId) => {
-            const toEl = document.getElementById(targetId);
-            if (!toEl) return;
-
-            const toRect = toEl.getBoundingClientRect();
-            const toX = toRect.left + toRect.width / 2 - containerRect.left + container.scrollLeft;
-            const toY = toRect.top + toRect.height / 2 - containerRect.top + container.scrollTop;
-
-            // Linha curva suave
-            const midY = (fromY + toY) / 2;
-            paths += `<path d="M ${fromX} ${fromY} C ${fromX} ${midY}, ${toX} ${midY}, ${toX} ${toY}" 
-                       stroke="#555" stroke-width="2" fill="none" stroke-dasharray="4 3"/>`;
-          });
-        });
-      });
-
-      svg.innerHTML = paths;
-    }
-
-    // Gera o primeiro mapa ao carregar
-    generateNewMap();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
