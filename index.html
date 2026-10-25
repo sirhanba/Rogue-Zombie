@@ -1,355 +1,387 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zombie Survival: Road Trip</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: #121214;
-            --card-bg: #1c1c21;
-            --accent-red: #ff4757;
-            --accent-green: #2ed573;
-            --accent-yellow: #ffa502;
-            --text-main: #f1f2f6;
-            --text-muted: #a4b0be;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-        }
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding: 10px;
-        }
-        .screen {
-            display: none;
-            width: 100%;
-            max-width: 480px;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            padding-bottom: 20px;
-        }
-        .screen.active {
-            display: flex;
-        }
-        h1, h2, h3 {
-            text-align: center;
-            letter-spacing: 1px;
-        }
-        .btn {
-            background-color: var(--accent-green);
-            color: #111;
-            font-weight: bold;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            transition: opacity 0.2s;
-        }
-        .btn:active {
-            opacity: 0.8;
-        }
-        .btn-danger {
-            background-color: var(--accent-red);
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #57606f;
-            color: white;
-        }
-        .hud {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            border: 1px solid #333;
-        }
-        .map-wrapper {
-            position: relative;
-            width: 100%;
-            max-height: 65vh;
-            overflow-y: auto;
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid #333;
-            padding: 10px;
-        }
-        #map-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-        #map-container {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 20px;
-            width: 100%;
-            padding: 10px;
-        }
-        .map-tier {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            min-height: 50px;
-        }
-        .map-node {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #2f3542;
-            border: 2px solid #57606f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            cursor: not-allowed;
-            transition: all 0.2s;
-        }
-        .map-node.available {
-            border-color: var(--accent-green);
-            background: #20bf6b33;
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--accent-green);
-        }
-        .map-node.visited {
-            background: #2f3542;
-            border-color: #333;
-            opacity: 0.4;
-        }
-        .combat-arena {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #333;
-        }
-        .enemy-info {
-            text-align: center;
-            width: 100%;
-        }
-        .zombie-timer-bar {
-            width: 100%;
-            height: 6px;
-            background: #333;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 6px;
-        }
-        .zombie-timer-fill {
-            height: 100%;
-            background: var(--accent-red);
-            width: 100%;
-            transition: width 0.1s linear;
-        }
-        .combat-canvas {
-            background: #111;
-            border-radius: 50%;
-            box-shadow: 0 0 12px rgba(0,0,0,0.8);
-        }
-        .weapon-slot-btn {
-            background: #2f3542;
-            border: 2px solid #57606f;
-            color: var(--text-muted);
-            padding: 8px 6px;
-            border-radius: 8px;
-            font-size: 11px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .weapon-slot-btn.active {
-            border-color: var(--accent-yellow);
-            background: #ffa50222;
-            color: var(--text-main);
-            font-weight: bold;
-        }
-        .shoot-btn {
-            width: 100%;
-            height: 75px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #ff4757, #ff6b81);
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            border: none;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            letter-spacing: 2px;
-        }
-        .shoot-btn:active {
-            transform: scale(0.97);
-        }
-        .skill-tree {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-        .skill-card {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .skill-info h4 {
-            font-size: 15px;
-            margin-bottom: 3px;
-        }
-        .skill-info p {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rogue Zombie - Map Generator Test</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      color: #ff6b6b;
+      font-size: 1.6rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    button {
+      background: #2d2d2d;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #3d3d3d;
+    }
+
+    button.primary {
+      background: #c0392b;
+      border-color: #e74c3c;
+    }
+
+    button.primary:hover {
+      background: #e74c3c;
+    }
+
+    .info {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .map-container {
+      display: flex;
+      flex-direction: column-reverse; /* nível 1 embaixo */
+      align-items: center;
+      gap: 28px;
+      padding: 20px 10px 40px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .level {
+      display: flex;
+      gap: 18px;
+      position: relative;
+      justify-content: center;
+      min-width: max-content;
+    }
+
+    .level-label {
+      position: absolute;
+      left: -48px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      color: #666;
+      width: 36px;
+      text-align: right;
+    }
+
+    .node {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      position: relative;
+      border: 2px solid transparent;
+      transition: transform 0.15s, box-shadow 0.15s;
+      user-select: none;
+    }
+
+    .node:hover {
+      transform: scale(1.12);
+      z-index: 10;
+    }
+
+    .node.start {
+      background: #2ecc71;
+      box-shadow: 0 0 12px #2ecc7188;
+    }
+
+    .node.battle {
+      background: #2c3e50;
+      border-color: #34495e;
+    }
+
+    .node.elite {
+      background: #8e44ad;
+      border-color: #9b59b6;
+      box-shadow: 0 0 10px #8e44ad66;
+    }
+
+    .node.event {
+      background: #2980b9;
+      border-color: #3498db;
+    }
+
+    .node.recovery {
+      background: #27ae60;
+      border-color: #2ecc71;
+    }
+
+    .node.shop {
+      background: #f39c12;
+      border-color: #f1c40f;
+      color: #222;
+    }
+
+    .node.chest {
+      background: #d35400;
+      border-color: #e67e22;
+    }
+
+    .node.shelter {
+      background: #1abc9c;
+      border-color: #16a085;
+      box-shadow: 0 0 16px #1abc9c88;
+      width: 64px;
+      height: 64px;
+      font-size: 1.7rem;
+    }
+
+    /* Tooltip */
+    .node::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      z-index: 20;
+    }
+
+    .node:hover::after {
+      opacity: 1;
+    }
+
+    /* Legenda */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      justify-content: center;
+      margin-top: 30px;
+      padding: 16px;
+      background: #222;
+      border-radius: 12px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+    }
+
+    .legend-color {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+    }
+
+    /* SVG das conexões */
+    #connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-    <!-- MENU PRINCIPAL -->
-    <div id="screen-menu" class="screen active">
-        <h2>🧟 APOCALYPSE SURVIVAL</h2>
-        <p style="color: var(--text-muted); text-align: center; font-size: 14px;">Sobreviva à viagem rumo ao abrigo seguro</p>
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333;">
-            <p>Pontos de Sobrevivência (Meta): <span id="meta-points" style="color: var(--accent-green); font-weight: bold;">0</span></p>
-        </div>
-        <button class="btn" onclick="startRun()">INICIAR VIAGEM</button>
-        <button class="btn btn-secondary" onclick="showScreen('screen-skills')">ÁRVORE DE HABILIDADES</button>
-    </div>
+  <h1>Rogue Zombie — Gerador de Mapa</h1>
+  <p class="subtitle">15 níveis • Geração Procedural • Visualização de teste</p>
 
-    <!-- TELA DO MAPA / VIAGEM -->
-    <div id="screen-map" class="screen">
-        <div class="hud" style="display: flex; justify-content: space-between; align-items: center;">
-            <span>🗺️ Etapa: <strong id="player-floor">1</strong>/20</span>
-            <button class="btn" onclick="showScreen('screen-backpack')" style="width: auto; padding: 6px 12px; font-size: 13px; background: #4b6584;">🎒 Mochila</button>
-            <span>🔩 Sucata: <strong id="player-scrap">0</strong></span>
-        </div>
-        <h3>SELECIONE SEU PRÓXIMO PASSO</h3>
-        <div class="map-wrapper" id="map-wrapper">
-            <canvas id="map-canvas"></canvas>
-            <div id="map-container"></div>
-        </div>
-        <button class="btn btn-danger" onclick="returnToMenu()">Desistir da Viagem</button>
-    </div>
+  <div class="controls">
+    <button class="primary" onclick="generateNewMap()">Gerar Novo Mapa</button>
+    <button onclick="generateWithSeed()">Gerar com Seed</button>
+  </div>
 
-    <!-- TELA DA MOCHILA -->
-    <div id="screen-backpack" class="screen">
-        <div class="hud">
-            <h2>🎒 Mochila de Suprimentos</h2>
-        </div>
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #333; width: 100%; display: flex; flex-direction: column; gap: 12px;">
-            <div style="background: #121214; padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                <span style="font-size: 13px; color: var(--text-muted);">Saúde Atual:</span>
-                <div style="font-size: 16px; font-weight: bold; color: var(--accent-green);" id="bp-hp">100 / 100</div>
-            </div>
-            <div>
-                <h4 style="font-size: 13px; margin-bottom: 6px; color: var(--text-muted);">Armas Equipadas (3 Slots)</h4>
-                <div id="bp-equipped-weapons" style="display: flex; gap: 8px;"></div>
-            </div>
-            <div>
-                <h4 style="font-size: 13px; margin-bottom: 6px; color: var(--text-muted);">Inventário (Grade 5x2)</h4>
-                <div id="bp-inventory-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;"></div>
-            </div>
-        </div>
-        <button class="btn btn-secondary" onclick="showScreen('screen-map')">Voltar ao Mapa</button>
-    </div>
+  <div class="info" id="info">Seed: —</div>
 
-    <!-- TELA DE COMBATE -->
-    <div id="screen-combat" class="screen">
-        <div class="hud">
-            <span>❤️ Seu HP: <span id="combat-hp">100</span></span>
-            <span>🔫 Munição: <span id="combat-ammo">8</span></span>
-        </div>
-        <div class="combat-arena">
-            <div class="enemy-info">
-                <h3 id="enemy-name">Zumbi</h3>
-                <p style="font-size: 13px; color: var(--text-muted);">HP Zumbi: <span id="enemy-hp">3</span></p>
-                <div class="zombie-timer-bar">
-                    <div id="zombie-fill" class="zombie-timer-fill"></div>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 5px 0;">
-                <canvas id="qteCanvas" class="combat-canvas" width="140" height="140"></canvas>
-                <div style="display: flex; flex-direction: column; gap: 8px; width: 130px;">
-                    <button class="weapon-slot-btn" id="slot-knife" onclick="switchWeapon('knife')">
-                        🔪 Faca<br><small>Infinito</small>
-                    </button>
-                    <button class="weapon-slot-btn active" id="slot-pistol" onclick="switchWeapon('pistol')">
-                        🔫 9mm<br><small>1 Munição</small>
-                    </button>
-                    <button class="weapon-slot-btn" id="slot-shotgun" onclick="switchWeapon('shotgun')">
-                        💣 Escopeta<br><small>1 Munição</small>
-                    </button>
-                </div>
-            </div>
-            <button class="shoot-btn" onclick="triggerShoot()">🔥 ATACAR</button>
-        </div>
-    </div>
+  <div class="map-wrapper">
+    <svg id="connections"></svg>
+    <div class="map-container" id="map"></div>
+  </div>
 
-    <!-- TELA DE EVENTOS / LOOT -->
-    <div id="screen-event" class="screen">
-        <div class="hud">
-            <span>❤️ HP: <span id="event-hp">100</span></span>
-            <span>🔩 Sucata: <span id="event-scrap">0</span></span>
-        </div>
-        <div class="combat-arena" style="text-align: center;">
-            <h3 id="event-title">Evento Desconhecido</h3>
-            <p id="event-desc" style="color: var(--text-muted); font-size: 14px; margin: 10px 0;">...</p>
-            <div id="event-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
-        </div>
-    </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#2ecc71"></div> Início</div>
+    <div class="legend-item"><div class="legend-color" style="background:#2c3e50"></div> Batalha</div>
+    <div class="legend-item"><div class="legend-color" style="background:#8e44ad"></div> Elite</div>
+    <div class="legend-item"><div class="legend-color" style="background:#2980b9"></div> Evento</div>
+    <div class="legend-item"><div class="legend-color" style="background:#27ae60"></div> Recuperação</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f39c12"></div> Loja</div>
+    <div class="legend-item"><div class="legend-color" style="background:#d35400"></div> Baú</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1abc9c"></div> Abrigo Seguro</div>
+  </div>
 
-    <!-- TELA DE HABILIDADES -->
-    <div id="screen-skills" class="screen">
-        <h2>ÁRVORE DE HABILIDADES</h2>
-        <p style="font-size: 13px; color: var(--text-muted); text-align: center;">Evoluções permanentes para todas as suas viagens</p>
-        <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333;">
-            Disponível: <span id="skills-points" style="color: var(--accent-green); font-weight: bold;">0</span> pts
-        </div>
-        <div class="skill-tree" id="skill-tree-list"></div>
-        <button class="btn btn-secondary" onclick="showScreen('screen-menu')">Voltar ao Menu</button>
-    </div>
+  <script src="MapGenerator.js"></script>
+  <script>
+    const ICONS = {
+      start: "🚶",
+      battle: "💀",
+      elite: "🔥",
+      event: "❓",
+      recovery: "❤️",
+      shop: "🛒",
+      chest: "📦",
+      shelter: "🏠"
+    };
 
-    <!-- TELA DE FIM DE JOGO -->
-    <div id="screen-gameover" class="screen" style="text-align: center; justify-content: center; height: 80vh;">
-        <h2 id="end-title" style="color: var(--accent-red);">VOCÊ MORREU</h2>
-        <p id="end-desc" style="color: var(--text-muted); font-size: 14px;">O apocalipse foi implacável.</p>
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; width: 100%; border: 1px solid #333;">
-            <p>Pontos de Sobrevivência Ganhos: <span id="earned-points" style="color: var(--accent-green); font-weight: bold;">0</span></p>
-        </div>
-        <button class="btn" onclick="showScreen('screen-menu')">Voltar ao Menu</button>
-    </div>
+    const TYPE_NAMES = {
+      start: "Início",
+      battle: "Batalha",
+      elite: "Elite",
+      event: "Evento",
+      recovery: "Recuperação",
+      shop: "Loja",
+      chest: "Baú",
+      shelter: "Abrigo Seguro"
+    };
 
-    <!-- SCRIPT DO JOGO (Se preferir separado, mantenha no script.js) -->
-    <script src="script.js"></script>
+    let currentMap = null;
+
+    function generateNewMap() {
+      const generator = new MapGenerator({ totalLevels: 15 });
+      currentMap = generator.generate();
+      renderMap(currentMap);
+    }
+
+    function generateWithSeed() {
+      const seed = prompt("Digite um seed (número):", Date.now());
+      if (seed === null) return;
+      const generator = new MapGenerator({ totalLevels: 15, seed: Number(seed) });
+      currentMap = generator.generate();
+      renderMap(currentMap);
+    }
+
+    function renderMap(map) {
+      const container = document.getElementById("map");
+      const svg = document.getElementById("connections");
+      container.innerHTML = "";
+      svg.innerHTML = "";
+
+      document.getElementById("info").textContent = `Seed: ${map.seed}  |  Níveis: ${map.totalLevels}`;
+
+      // Renderiza níveis (de baixo para cima por causa do column-reverse)
+      map.levels.forEach((levelData) => {
+        const levelDiv = document.createElement("div");
+        levelDiv.className = "level";
+        levelDiv.dataset.level = levelData.level;
+
+        const label = document.createElement("div");
+        label.className = "level-label";
+        label.textContent = `Nv ${levelData.level}`;
+        levelDiv.appendChild(label);
+
+        levelData.nodes.forEach((node) => {
+          const el = document.createElement("div");
+          el.className = `node ${node.type}`;
+          el.id = node.id;
+          el.textContent = ICONS[node.type] || "?";
+          el.dataset.tooltip = `${TYPE_NAMES[node.type]} (${node.id})`;
+          levelDiv.appendChild(el);
+        });
+
+        container.appendChild(levelDiv);
+      });
+
+      // Desenha conexões depois que o layout foi calculado
+      requestAnimationFrame(() => {
+        drawConnections(map);
+      });
+    }
+
+    function drawConnections(map) {
+      const svg = document.getElementById("connections");
+      const container = document.getElementById("map");
+      const containerRect = container.getBoundingClientRect();
+
+      svg.setAttribute("width", container.scrollWidth);
+      svg.setAttribute("height", container.scrollHeight);
+      svg.style.width = container.scrollWidth + "px";
+      svg.style.height = container.scrollHeight + "px";
+
+      let paths = "";
+
+      map.levels.forEach((levelData) => {
+        levelData.nodes.forEach((node) => {
+          const fromEl = document.getElementById(node.id);
+          if (!fromEl) return;
+
+          const fromRect = fromEl.getBoundingClientRect();
+          const fromX = fromRect.left + fromRect.width / 2 - containerRect.left + container.scrollLeft;
+          const fromY = fromRect.top + fromRect.height / 2 - containerRect.top + container.scrollTop;
+
+          node.connections.forEach((targetId) => {
+            const toEl = document.getElementById(targetId);
+            if (!toEl) return;
+
+            const toRect = toEl.getBoundingClientRect();
+            const toX = toRect.left + toRect.width / 2 - containerRect.left + container.scrollLeft;
+            const toY = toRect.top + toRect.height / 2 - containerRect.top + container.scrollTop;
+
+            // Linha curva suave
+            const midY = (fromY + toY) / 2;
+            paths += `<path d="M ${fromX} ${fromY} C ${fromX} ${midY}, ${toX} ${midY}, ${toX} ${toY}" 
+                       stroke="#555" stroke-width="2" fill="none" stroke-dasharray="4 3"/>`;
+          });
+        });
+      });
+
+      svg.innerHTML = paths;
+    }
+
+    // Gera o primeiro mapa ao carregar
+    generateNewMap();
+  </script>
 </body>
 </html>
