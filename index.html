@@ -6,8 +6,6 @@
   <meta name="theme-color" content="#0f0f0f" />
   <title>Rogue Zombie</title>
   <link rel="stylesheet" href="style.css" />
-  
-  <!-- Telegram Web App Script (oficial) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -37,22 +35,25 @@
       </div>
     </div>
 
-    <!-- ==================== TELA: NOVA RUN (placeholder) ==================== -->
+    <!-- ==================== TELA DO MAPA ==================== -->
     <div id="screen-run" class="screen">
-      <div class="placeholder-screen">
-        <h2>🗺️ Mapa da Run</h2>
-        <p>Aqui entrará o mapa procedural de 15 níveis.</p>
-        <button class="btn btn-secondary back-btn" data-back="menu">
-          ← Voltar ao Menu
-        </button>
+      <div class="map-header">
+        <button class="btn-icon-only" id="btn-back-menu" title="Voltar">←</button>
+        <div class="map-title">Mapa da Run</div>
+        <div class="map-seed" id="map-seed"></div>
+      </div>
+
+      <div class="map-wrapper" id="map-wrapper">
+        <svg id="map-connections"></svg>
+        <div class="map-container" id="map-container"></div>
       </div>
     </div>
 
-    <!-- ==================== TELA: ÁRVORE DE HABILIDADES (placeholder) ==================== -->
+    <!-- ==================== TELA: ÁRVORE DE HABILIDADES ==================== -->
     <div id="screen-skills" class="screen">
       <div class="placeholder-screen">
         <h2>🌳 Árvore de Habilidades</h2>
-        <p>Aqui entrará a árvore de perks permanentes.</p>
+        <p>Em breve.</p>
         <button class="btn btn-secondary back-btn" data-back="menu">
           ← Voltar ao Menu
         </button>
