@@ -1,0 +1,171 @@
+/* ========================================
+   Rogue Zombie - Estilos Globais
+   ======================================== */
+
+:root {
+  --bg-dark: #0f0f0f;
+  --bg-card: #1a1a1a;
+  --bg-card-hover: #222;
+  --accent: #c0392b;
+  --accent-hover: #e74c3c;
+  --accent-glow: #c0392b66;
+  --text: #f0f0f0;
+  --text-muted: #888;
+  --border: #333;
+  --success: #27ae60;
+  --warning: #f39c12;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ----------------------------------------
+   Tela: Menu Principal
+   ---------------------------------------- */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  background: var(--bg-dark);
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fundo com leve gradiente */
+#screen-menu {
+  background: 
+    radial-gradient(ellipse at 50% 0%, #1a0a0a 0%, transparent 60%),
+    var(--bg-dark);
+}
+
+.menu-logo {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 6px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.menu-logo span {
+  color: var(--accent);
+}
+
+.menu-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 6px 24px var(--accent-glow);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: #555;
+}
+
+.btn-icon {
+  font-size: 1.25rem;
+}
+
+.menu-footer {
+  position: absolute;
+  bottom: 20px;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+/* Placeholder das outras telas */
+.placeholder-screen {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.placeholder-screen h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.placeholder-screen p {
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  font-size: 0.95rem;
+}
+
+.back-btn {
+  margin-top: 20px;
+}
