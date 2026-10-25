@@ -1,13 +1,12 @@
 /**
  * MapGenerator.js
  * Geração procedural de mapa vertical - 15 níveis
+ * \~60% dos nós são batalha
  */
 
 class MapGenerator {
   constructor(options = {}) {
     this.totalLevels = options.totalLevels || 15;
-    this.minNodesPerLevel = options.minNodesPerLevel || 2;
-    this.maxNodesPerLevel = options.maxNodesPerLevel || 4;
     this.seed = options.seed || Date.now();
     this.rng = this.createRNG(this.seed);
   }
@@ -29,12 +28,16 @@ class MapGenerator {
     if (level === 1) return "start";
     if (level === this.totalLevels) return "shelter";
 
-    if (level >= 5 && this.rng() < 0.12 + level * 0.008) return "elite";
-    if (this.rng() < 0.08) return "recovery";
-    if (this.rng() < 0.07) return "shop";
-    if (this.rng() < 0.18) return "chest";
-    if (this.rng() < 0.22) return "event";
-    return "battle";
+    const roll = this.rng();
+
+    // Distribuição aproximada:
+    // 60% battle | 12% event | 10% chest | 8% elite | 5% recovery | 5% shop
+    if (roll < 0.60) return "battle";
+    if (roll < 0.72) return "event";
+    if (roll < 0.82) return "chest";
+    if (roll < 0.90) return "elite";
+    if (roll < 0.95) return "recovery";
+    return "shop";
   }
 
   generate() {
@@ -55,11 +58,16 @@ class MapGenerator {
 
       const nodes = [];
       for (let i = 0; i < nodeCount; i++) {
+        let type = this.getNodeType(level);
+
+        // Evita elite nos primeiros níveis
+        if (level <= 4 && type === "elite") type = "battle";
+
         nodes.push({
           id: `n${nodeIdCounter++}`,
           level,
           index: i,
-          type: this.getNodeType(level),
+          type,
           connections: [],
           visited: false,
           completed: false,
@@ -103,23 +111,14 @@ class MapGenerator {
       });
     }
 
-    // Garante recoveries mínimas
-    for (let i = 3; i < levels.length - 1; i += 5) {
+    // Garante pelo menos algumas recuperações
+    for (let i = 4; i < levels.length - 1; i += 5) {
       const lvl = levels[i];
       if (!lvl.nodes.some(n => n.type === "recovery")) {
         const battleNode = lvl.nodes.find(n => n.type === "battle");
         if (battleNode) battleNode.type = "recovery";
       }
     }
-
-    // Remove elites muito cedo
-    levels.forEach(lvl => {
-      if (lvl.level <= 3) {
-        lvl.nodes.forEach(n => {
-          if (n.type === "elite") n.type = "battle";
-        });
-      }
-    });
 
     return {
       seed: this.seed,
